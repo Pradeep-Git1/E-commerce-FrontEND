@@ -114,7 +114,7 @@ const LuxuryChocolates = () => {
                   className="mt-2"
                   style={{ background: "#D4A373", borderColor: "#D4A373", borderRadius: "6px" }}
                 >
-                  Buy Now 🛒
+                  Add To Cart 🛒
                 </Button>
               </div>
             </Card>

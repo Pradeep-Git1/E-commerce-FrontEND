@@ -1,15 +1,31 @@
 import React, { useState } from "react";
-import { Avatar, Drawer, Button, Space, Typography } from "antd";
-import { UserOutlined, MenuOutlined } from "@ant-design/icons";
+import { Avatar, Drawer, Button, Space, Typography, Badge, List, Divider } from "antd";
+import { UserOutlined, MenuOutlined, ShoppingCartOutlined, DeleteOutlined, LogoutOutlined, HeartOutlined, FileTextOutlined, HomeOutlined, MessageOutlined, GiftOutlined } from "@ant-design/icons";
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const categories = ["Milk", "Dark", "White", "Love", "Luxury", "Gifts"];
 const chocolateColor = "#8B4513"; // Chocolate brown
 
+const sampleCart = [
+  { id: 1, name: "Luxury Truffle Box", price: 1999, quantity: 1, image: "/images/image1.jpg" },
+  { id: 2, name: "Swiss Hazelnut Bliss", price: 2499, quantity: 2, image: "/images/image2.jpg" },
+  { id: 3, name: "Belgian Dark Chocolate", price: 1799, quantity: 1, image: "/images/image3.jpg" },
+];
+
 const TopNav = () => {
   const [visible, setVisible] = useState(false);
-  const [active, setActive] = useState("Milk");
+  const [cartVisible, setCartVisible] = useState(false);
+  const [userVisible, setUserVisible] = useState(false);
+  const [cart, setCart] = useState(sampleCart);
+
+  // Calculate Total Price
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // Remove Item from Cart
+  const removeFromCart = (id) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
 
   return (
     <>
@@ -30,13 +46,7 @@ const TopNav = () => {
             <ul className="navbar-nav">
               {categories.map((category) => (
                 <li key={category} className="nav-item mx-3">
-                  <a
-                    href="#"
-                    onClick={() => setActive(category)}
-                    className={`nav-link fw-semibold position-relative ${active === category ? "active-choco" : "text-dark"}`}
-                  >
-                    {category}
-                  </a>
+                  <a href="#" className="nav-link fw-semibold text-dark">{category}</a>
                 </li>
               ))}
             </ul>
@@ -44,11 +54,26 @@ const TopNav = () => {
 
           {/* Right Side Icons */}
           <Space size="middle">
-            <Avatar size="large" icon={<UserOutlined />} />
+            {/* Cart Icon with Badge */}
+            <Badge count={cart.length} showZero>
+              <ShoppingCartOutlined 
+                style={{ fontSize: 24, cursor: "pointer", color: chocolateColor }} 
+                onClick={() => setCartVisible(true)} 
+              />
+            </Badge>
+
+            {/* User Avatar (Click to Open User Drawer) */}
+            <Avatar 
+              size="large" 
+              icon={<UserOutlined />} 
+              style={{ cursor: "pointer" }} 
+              onClick={() => setUserVisible(true)} 
+            />
+
             {/* Mobile Menu Button */}
             <Button
               type="text"
-              icon={<MenuOutlined style={{ fontSize: 22 }} />}
+              icon={<MenuOutlined style={{ fontSize: 22 }} />} 
               className="d-lg-none"
               onClick={() => setVisible(true)}
             />
@@ -61,41 +86,124 @@ const TopNav = () => {
         <ul className="list-unstyled text-center">
           {categories.map((category) => (
             <li key={category} className="my-3">
-              <a
-                href="#"
-                onClick={() => setActive(category)}
-                className={`text-dark fw-semibold fs-5 d-block position-relative ${active === category ? "active-choco" : ""}`}
-              >
-                {category}
-              </a>
+              <a href="#" className="text-dark fw-semibold fs-5 d-block">{category}</a>
             </li>
           ))}
         </ul>
       </Drawer>
 
-      {/* Styles for Melting Chocolate Effect */}
+      {/* 🛒 Cart Drawer */}
+      <Drawer 
+        title="Your Cart" 
+        placement="right" 
+        onClose={() => setCartVisible(false)} 
+        open={cartVisible} 
+        width={350}
+      >
+        {cart.length > 0 ? (
+          <>
+            <List
+              dataSource={cart}
+              renderItem={(item) => (
+                <List.Item className="d-flex align-items-center">
+                  <img src={item.image} alt={item.name} className="rounded" style={{ width: 50, height: 50, objectFit: "cover" }} />
+                  <div className="ms-3">
+                    <Title level={5} className="mb-0">{item.name}</Title>
+                    <Paragraph className="mb-0 text-muted">₹{item.price} x {item.quantity}</Paragraph>
+                  </div>
+                  <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFromCart(item.id)} />
+                </List.Item>
+              )}
+            />
+
+            {/* Cart Total & Checkout */}
+            <div className="text-center mt-3">
+              <Title level={4} className="fw-bold text-gold">Total: ₹{totalPrice}</Title>
+              <Button type="primary" className="checkout-btn mt-2 w-100">
+                Proceed to Checkout 🛍️
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Paragraph className="text-center text-muted mt-4">Your cart is empty!</Paragraph>
+        )}
+      </Drawer>
+
+      {/* 👤 User Profile Drawer */}
+      <Drawer 
+        title="Your Account" 
+        placement="right" 
+        onClose={() => setUserVisible(false)} 
+        open={userVisible} 
+        width={300}
+      >
+        <List>
+          <List.Item>
+            <HomeOutlined className="me-2" /> Addresses
+          </List.Item>
+          <List.Item>
+            <FileTextOutlined className="me-2" /> Orders
+          </List.Item>
+          <List.Item>
+            <HeartOutlined className="me-2" /> Wishlist
+          </List.Item>
+          <List.Item>
+            <MessageOutlined className="me-2" /> Talk to Us
+          </List.Item>
+          <List.Item>
+            <GiftOutlined className="me-2" /> Gift Cards
+          </List.Item>
+          <Divider />
+          <List.Item className="text-danger fw-bold" onClick={() => alert("Logging Out")}>
+            <LogoutOutlined className="me-2" /> Logout
+          </List.Item>
+        </List>
+      </Drawer>
+
+      {/* Custom Styles */}
       <style>{`
-        .active-choco {
-          color: ${chocolateColor} !important;
+        /* Gold Theme */
+        .text-gold {
+          color: #d4af37 !important;
           font-weight: bold;
         }
-        
-        .active-choco::after {
-          content: "";
-          position: absolute;
-          bottom: -5px;
-          left: 50%;
-          width: 80%;
-          height: 4px;
-          background: linear-gradient(to right, #5a2d0c, #8B4513, #b36b3c);
-          transform: translateX(-50%);
-          border-radius: 10px;
-          transition: all 0.3s ease-in-out;
+
+        /* Checkout Button */
+        .checkout-btn {
+          background: linear-gradient(to right, #d4af37, #b8860b);
+          border: none;
+          font-weight: bold;
+          padding: 12px 20px;
+          border-radius: 8px;
         }
 
-        .active-choco:hover::after {
-          height: 6px;
-          bottom: -6px;
+        .checkout-btn:hover {
+          background: linear-gradient(to right, #b8860b, #d4af37);
+          transform: scale(1.05);
+        }
+
+        /* Cart Item List */
+        .ant-list-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid #eee;
+          padding: 10px 0;
+        }
+
+        /* User Drawer Styling */
+        .ant-drawer-title {
+          font-weight: bold;
+          font-size: 18px;
+        }
+
+        .ant-list-item {
+          cursor: pointer;
+        }
+
+        .ant-list-item:hover {
+          background: #f5f5f5;
+          border-radius: 6px;
         }
       `}</style>
     </>

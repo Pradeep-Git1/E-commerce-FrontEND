@@ -124,7 +124,7 @@ const GiftChocolates = () => {
                 </Paragraph>
                 <Paragraph className="small text-muted">{choco.description}</Paragraph>
                 <Button type="primary" size="middle" className="mt-2 gift-btn">
-                  Buy Now 🎀
+                  Add to Cart 🎀
                 </Button>
               </div>
             </Card>
