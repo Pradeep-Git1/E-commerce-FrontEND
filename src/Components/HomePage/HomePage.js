@@ -1,16 +1,94 @@
-import React from 'react'
-import TopNav from './TopNav'
-import MainContent from './MainContent'
-import Footer from './Footer'
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import TopNav from "./TopNav";
+import MainContent from "./MainContent";
+import Footer from "./Footer";
+
+
+const MilkChocolates = lazy(() => import("../Categories/Milk"));
+const WhiteChocolates = lazy(() => import("../Categories/White"));
+const DarkChocolates = lazy(() => import("../Categories/Dark"));
+const LuxuryChocolates = lazy(() => import("../Categories/Luxury"));
+const GiftsChocolates = lazy(() => import("../Categories/Gift"));
+
+
+const ChocolateLoader = () => (
+  <div className="chocolate-loader-container">
+    <div className="chocolate-bar">
+      <div className="chocolate-piece"></div>
+      <div className="chocolate-piece"></div>
+      <div className="chocolate-piece"></div>
+      <div className="chocolate-piece"></div>
+      <div className="chocolate-piece"></div>
+    </div>
+    <p className="loading-text">Melting Chocolates... 🍫</p>
+
+    {/* CSS Styles for Chocolate Animation */}
+    <style>{`
+      .chocolate-loader-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 50vh;
+      }
+
+      .chocolate-bar {
+        display: flex;
+        gap: 5px;
+        padding: 10px;
+        background: #6b3e26;
+        border-radius: 10px;
+        box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .chocolate-piece {
+        width: 20px;
+        height: 30px;
+        background: #8B4513;
+        border-radius: 5px;
+        animation: melt 1.5s infinite ease-in-out;
+      }
+
+      .chocolate-piece:nth-child(2) { animation-delay: 0.2s; }
+      .chocolate-piece:nth-child(3) { animation-delay: 0.4s; }
+      .chocolate-piece:nth-child(4) { animation-delay: 0.6s; }
+      .chocolate-piece:nth-child(5) { animation-delay: 0.8s; }
+
+      @keyframes melt {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(5px); }
+      }
+
+      .loading-text {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+        color: #6b3e26;
+      }
+    `}</style>
+  </div>
+);
 
 function HomePage() {
   return (
-    <div >
-      <TopNav/>
-      <MainContent/>
-      <Footer/>
-    </div>
-  )
+    <Router>
+      <div>
+        <TopNav />
+        <Suspense fallback={<ChocolateLoader />}>
+          <Routes>
+            <Route path="/" element={<MainContent />} /> {/* Default Content */}
+            <Route path="/category/milk" element={<MilkChocolates />} />
+            <Route path="/category/white" element={<WhiteChocolates />} />
+            <Route path="/category/dark" element={<DarkChocolates />} />
+            <Route path="/category/luxury" element={<LuxuryChocolates />} />
+            <Route path="/category/gift" element={<GiftsChocolates />} />
+          </Routes>
+        </Suspense>
+        <Footer />
+      </div>
+    </Router>
+  );
 }
 
-export default HomePage
+export default HomePage;

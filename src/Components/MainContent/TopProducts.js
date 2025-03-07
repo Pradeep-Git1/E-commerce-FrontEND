@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Carousel, Card, Typography, Button } from "antd";
+import CartItemModal from "../FunctionalComps/CartItemModal"; 
 
 const { Title, Paragraph } = Typography;
 
@@ -13,9 +14,33 @@ const products = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 const TopProducts = () => {
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [cart, setCart] = useState([]);
+
+  // Open Modal
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setModalVisible(true);
+  };
+
+  // Close Modal
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  // Simulated Add to Cart
+  const handleAddToCart = (product, quantity) => {
+    setCart([...cart, { ...product, quantity }]);
+    setModalVisible(false);
+    console.log("Cart Updated:", [...cart, { ...product, quantity }]);
+  };
+
   return (
     <div className="container-fluid mt-5 mb-5">
-      <Title level={2} className="text-center mt-5 text-highlight">🔥 Top Products</Title>
+      <Title level={2} className="text-center mt-5 text-highlight">
+        🔥 Top Products
+      </Title>
 
       {/* Horizontal Scrollable Container */}
       <div className="scroll-container">
@@ -53,6 +78,7 @@ const TopProducts = () => {
                   type="primary" 
                   size="small" 
                   className="mt-2 product-btn"
+                  onClick={() => handleOpenModal(product)}
                 >
                   Add to Cart 🛒
                 </Button>
@@ -62,65 +88,40 @@ const TopProducts = () => {
         </div>
       </div>
 
+      {/* Cart Modal */}
+      {selectedProduct && (
+        <CartItemModal
+          visible={modalVisible}
+          product={selectedProduct}
+          onClose={handleCloseModal}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+
       {/* Custom Styles */}
       <style>
         {`
-          /* Section Highlight */
           .text-highlight {
             color: #8B4513;
             font-weight: bold;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
           }
-
-          /* Horizontal Scrolling Effect */
           .scroll-container {
             width: 100%;
             overflow-x: auto;
             white-space: nowrap;
             padding: 10px;
           }
-
           .product-scroll {
             display: flex;
             gap: 16px;
           }
-
-          .scroll-container::-webkit-scrollbar {
-            height: 8px;
-          }
-
-          .scroll-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 5px;
-          }
-
-          .scroll-container::-webkit-scrollbar-thumb {
-            background: #D4A373;
-            border-radius: 5px;
-          }
-
-          /* Product Cards */
           .product-card {
             width: 260px;
             min-height: 380px;
             transition: transform 0.3s ease-in-out;
           }
-
           .product-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-          }
-
-          /* Button Styling */
-          .product-btn {
-            background: linear-gradient(to right, #D4A373, #b07b53);
-            border: none;
-            border-radius: 6px;
-            transition: all 0.3s ease-in-out;
-          }
-
-          .product-btn:hover {
-            background: linear-gradient(to right, #b07b53, #8B4513);
             transform: scale(1.05);
           }
         `}
