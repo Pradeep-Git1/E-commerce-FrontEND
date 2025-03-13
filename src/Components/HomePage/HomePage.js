@@ -4,13 +4,7 @@ import TopNav from "./TopNav";
 import MainContent from "./MainContent";
 import Footer from "./Footer";
 
-
-const MilkChocolates = lazy(() => import("../Categories/Milk"));
-const WhiteChocolates = lazy(() => import("../Categories/White"));
-const DarkChocolates = lazy(() => import("../Categories/Dark"));
-const LuxuryChocolates = lazy(() => import("../Categories/Luxury"));
-const GiftsChocolates = lazy(() => import("../Categories/Gift"));
-
+const CategoryPage = lazy(() => import("../Categories/CategoryPage")); // Single component for all categories
 
 const ChocolateLoader = () => (
   <div className="chocolate-loader-container">
@@ -78,11 +72,8 @@ function HomePage() {
         <Suspense fallback={<ChocolateLoader />}>
           <Routes>
             <Route path="/" element={<MainContent />} /> {/* Default Content */}
-            <Route path="/category/milk" element={<MilkChocolates />} />
-            <Route path="/category/white" element={<WhiteChocolates />} />
-            <Route path="/category/dark" element={<DarkChocolates />} />
-            <Route path="/category/luxury" element={<LuxuryChocolates />} />
-            <Route path="/category/gift" element={<GiftsChocolates />} />
+            <Route path="/category/:categoryId" element={<CategoryPage />} />
+
           </Routes>
         </Suspense>
         <Footer />

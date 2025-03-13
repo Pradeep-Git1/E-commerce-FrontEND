@@ -1,144 +1,195 @@
-import React, { useState } from "react";
-import { Avatar, Button, Space, Typography, Badge, Drawer, List, Divider } from "antd";
-import { Link } from "react-router-dom"; // Import Link from React Router
-import { UserOutlined, MenuOutlined, ShoppingCartOutlined, LogoutOutlined, HeartOutlined, FileTextOutlined, HomeOutlined, MessageOutlined, GiftOutlined } from "@ant-design/icons";
-import CartDrawer from "../FunctionalComps/CartDrawer";
+import React, { useState, useEffect, useRef } from "react";
+import { Avatar, Button, Space, Typography, Badge, Drawer, Menu, Spin, Alert } from "antd";
+import { Link, useLocation } from "react-router-dom";
+import {
+  UserOutlined,
+  MenuOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
+import { getRequest } from "../../Services/api";
+import UserMenu from "./UserMenu";
+import CartMenu from "./CartMenu";
 
 const { Title } = Typography;
-
-const categories = [
-  { name: "Milk", path: "/category/milk" },
-  { name: "Dark", path: "/category/dark" },
-  { name: "White", path: "/category/white" },
-  { name: "Love", path: "/category/luxury" },
-  { name: "Luxury", path: "/category/luxury" },
-  { name: "Gifts", path: "/category/gift" },
-];
-
-const chocolateColor = "#8B4513";
+const primaryColor = "#593E2F";
+const secondaryColor = "#D2B48C";
 
 const TopNav = () => {
-  const [visible, setVisible] = useState(false);
-  const [userVisible, setUserVisible] = useState(false);
-  const [cartVisible, setCartVisible] = useState(false);
-  const [cart, setCart] = useState([
-    { id: 1, name: "Luxury Truffle Box", price: 1999, quantity: 1, image: "/images/image1.jpg" },
-    { id: 2, name: "Swiss Hazelnut Bliss", price: 2499, quantity: 2, image: "/images/image2.jpg" },
-  ]);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [drawerContent, setDrawerContent] = useState("menu");
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [showMenuIcon, setShowMenuIcon] = useState(false);
+  const navRef = useRef(null);
+  const location = useLocation();
 
-  // Remove Item from Cart
-  const removeFromCart = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getRequest("/top-categories/");
+        setCategories(response);
+      } catch (err) {
+        setError("Failed to load categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+
+    setTimeout(() => {
+      setUser({ name: "John Doe" });
+    }, 1000);
+
+    const checkMenuVisibility = () => {
+      setShowMenuIcon(window.innerWidth < 992);
+    };
+
+    checkMenuVisibility();
+    window.addEventListener("resize", checkMenuVisibility);
+
+    return () => {
+      window.removeEventListener("resize", checkMenuVisibility);
+    };
+  }, []);
+
+  const getCategoryNameFromPath = (path) => {
+    const parts = path.split("/");
+    if (parts[1] === "category" && categories.length > 0) {
+      const categoryId = parseInt(parts[2]);
+      const foundCategory = categories.find((cat) => cat.id === categoryId);
+      return foundCategory ? foundCategory.name : null;
+    }
+    return null;
   };
+
+  const selectedCategoryName = getCategoryNameFromPath(location.pathname);
 
   return (
     <>
-      {/* Navbar */}
-      <nav className="navbar navbar-expand-lg bg-white sticky-top">
-        <div className="container-fluid d-flex align-items-center justify-content-between py-2">
-          
-          {/* Logo */}
-          <Link to="/" className="d-flex align-items-center text-decoration-none">
-            <img src="/companylogo.png" alt="Company Logo" style={{ height: 45 }} />
-            <Title level={4} className="mb-0 ms-2 text-dark fw-bold">
-              Chocolate Factory
-            </Title>
-          </Link>
+      <div
+        ref={navRef}
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+          width: "100%",
+          background: "#fff",
+          padding: "16px 24px",
+          borderBottom: "1px solid #EAEAEA",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Logo Section */}
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img src="/companylogo.png" alt="Logo" style={{ height: 50, marginRight: 16 }} />
+          <Title level={3} style={{ marginBottom: 0, color: primaryColor, fontWeight: 600 }}>Chocolate Factory</Title>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="d-none d-lg-flex flex-grow-1 justify-content-center">
-            <ul className="navbar-nav">
-              {categories.map((category) => (
-                <li key={category.name} className="nav-item mx-3">
-                  <Link to={category.path} className="nav-link fw-semibold text-dark">
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+        {/* Centered Categories */}
+        {!showMenuIcon && !loading && !error && categories.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexGrow: 1,
+            }}
+          >
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                to={`/category/${category.id}`}
+                style={{
+                  padding: "10px 18px",
+                  margin: "0 10px",
+                  borderRadius: "20px",
+                  color: primaryColor,
+                  fontWeight: selectedCategoryName === category.name ? "600" : "400",
+                  textDecoration: "none",
+                  backgroundColor: selectedCategoryName === category.name ? secondaryColor : "transparent",
+                  transition: "background-color 0.3s ease, transform 0.2s ease",
+                  fontSize: "15px",
+                }}
+              >
+                {category.name}
+              </Link>
+            ))}
           </div>
+        )}
 
-          {/* Right Side Icons */}
-          <Space size="middle">
-            {/* Cart Icon with Badge */}
-            <Badge count={cart.length} showZero>
-              <ShoppingCartOutlined
-                style={{ fontSize: 24, cursor: "pointer", color: chocolateColor }}
-                onClick={() => setCartVisible(true)}
-              />
-            </Badge>
+        {loading && <Spin />}
+        {error && <Alert message={error} type="error" showIcon />}
 
-            {/* User Avatar (Click to Open User Drawer) */}
+        {/* User & Cart Section */}
+        <Space size="middle">
+          {/* Cart */}
+          <Badge count={2} showZero>
+            <ShoppingCartOutlined
+              style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
+              onClick={() => {
+                setDrawerContent("cart");
+                setDrawerVisible(true);
+              }}
+            />
+          </Badge>
+
+          {/* User Profile */}
+          {user && (
             <Avatar
               size="large"
               icon={<UserOutlined />}
-              style={{ cursor: "pointer" }}
-              onClick={() => setUserVisible(true)}
+              style={{ cursor: "pointer", backgroundColor: primaryColor }}
+              onClick={() => {
+                setDrawerContent("profile");
+                setDrawerVisible(true);
+              }}
             />
+          )}
 
-            {/* Mobile Menu Button */}
+          {/* Mobile Menu Icon */}
+          {showMenuIcon && (
             <Button
               type="text"
-              icon={<MenuOutlined style={{ fontSize: 22 }} />}
-              className="d-lg-none"
-              onClick={() => setVisible(true)}
+              icon={<MenuOutlined style={{ fontSize: 24, color: primaryColor }} />}
+              onClick={() => {
+                setDrawerContent("menu");
+                setDrawerVisible(true);
+              }}
             />
-          </Space>
-        </div>
-      </nav>
+          )}
+        </Space>
+      </div>
 
-      {/* Mobile Drawer Menu */}
-      <Drawer title="Menu" placement="right" onClose={() => setVisible(false)} open={visible} width={260}>
-        <ul className="list-unstyled text-center">
-          {categories.map((category) => (
-            <li key={category.name} className="my-3">
-              <Link to={category.path} className="text-dark fw-semibold fs-5 d-block" onClick={() => setVisible(false)}>
-                {category.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Drawer>
-
-      {/* User Profile Drawer */}
+      {/* Drawer for Mobile Menu */}
       <Drawer
-        title="Your Account"
+        title={drawerContent === "profile" ? "Your Account" : drawerContent === "cart" ? "Your Cart" : "Menu"}
         placement="right"
-        onClose={() => setUserVisible(false)}
-        open={userVisible}
-        width={300}
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+        width={320}
+        bodyStyle={{ padding: "24px" }}
+        headerStyle={{ backgroundColor: secondaryColor, borderBottom: "1px solid #EAEAEA" }}
       >
-        <List>
-          <List.Item>
-            <HomeOutlined className="me-2" /> Addresses
-          </List.Item>
-          <List.Item>
-            <FileTextOutlined className="me-2" /> Orders
-          </List.Item>
-          <List.Item>
-            <HeartOutlined className="me-2" /> Wishlist
-          </List.Item>
-          <List.Item>
-            <MessageOutlined className="me-2" /> Talk to Us
-          </List.Item>
-          <List.Item>
-            <GiftOutlined className="me-2" /> Gift Cards
-          </List.Item>
-          <Divider />
-          <List.Item className="text-danger fw-bold" onClick={() => alert("Logging Out")}>
-            <LogoutOutlined className="me-2" /> Logout
-          </List.Item>
-        </List>
+        {drawerContent === "profile" && <UserMenu user={user} />}
+        {drawerContent === "cart" && <CartMenu />}
+        {drawerContent === "menu" && (
+          <Menu mode="vertical" selectable={false}>
+            {categories.map((category) => (
+              <Menu.Item key={category.id}>
+                <Link to={`/category/${category.id}`} style={{ fontWeight: 600, color: primaryColor, textDecoration: "none" }}>
+                  {category.name}
+                </Link>
+              </Menu.Item>
+            ))}
+          </Menu>
+        )}
       </Drawer>
-
-      {/* Cart Drawer Component */}
-      <CartDrawer
-        visible={cartVisible}
-        onClose={() => setCartVisible(false)}
-        cart={cart}
-        removeFromCart={removeFromCart}
-        onCheckout={() => alert("Proceeding to Checkout")}
-      />
     </>
   );
 };
