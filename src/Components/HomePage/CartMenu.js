@@ -1,15 +1,12 @@
-import React, { useState } from "react";
-import { List, Typography, Button, Badge } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
 
+import React, { useContext } from "react";
+import { List, Typography, Button } from "antd";
+import { AppContext } from "../../AppContext";
+import {  DeleteOutlined } from "@ant-design/icons";
 const { Title, Paragraph } = Typography;
 
 const CartMenu = () => {
-  const [cart, setCart] = useState([]);
-
-  const removeFromCart = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
-  };
+  const { cart, removeFromCart } = useContext(AppContext);
 
   return cart.length > 0 ? (
     <>
@@ -17,11 +14,7 @@ const CartMenu = () => {
         dataSource={cart}
         renderItem={(item) => (
           <List.Item className="d-flex align-items-center">
-            <img
-              src={item.image}
-              alt={item.name}
-              style={{ width: 50, height: 50, objectFit: "cover", borderRadius: "5px" }}
-            />
+            <img src={item.image} alt={item.name} style={{ width: 50, height: 50, objectFit: "cover", borderRadius: "5px" }} />
             <div className="ms-3">
               <Title level={5} className="mb-0">{item.name}</Title>
               <Paragraph className="mb-0 text-muted">₹{item.price} x {item.quantity}</Paragraph>

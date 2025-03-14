@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Typography, Carousel, Button } from "antd";
+import { Card, Typography, Carousel, Button, Tag, Space } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ProductModal from "./ProductModal";
 
@@ -17,48 +17,79 @@ const ProductCard = ({ product }) => {
         hoverable
         onClick={() => setModalVisible(true)}
         style={{
-          borderRadius: 12,
+          borderRadius: 16,
           overflow: "hidden",
           position: "relative",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Depth with subtle shadow
+          boxShadow: "0 6px 12px rgba(0, 0, 0, 0.18)",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Carousel autoplay autoplaySpeed={transitionTime} effect="fade">
-          {product.images.length > 0 ? (
-            product.images.map((img, index) => (
-              <div key={index}>
+        <div style={{ flex: 1 }}>
+          <Carousel autoplay autoplaySpeed={transitionTime} effect="fade">
+            {product.images.length > 0 ? (
+              product.images.map((img, index) => (
+                <div key={index}>
+                  <img
+                    src={formatImageUrl(img)}
+                    alt={product.name}
+                    style={{ width: "100%", height: 200, objectFit: "cover" }}
+                  />
+                </div>
+              ))
+            ) : (
+              <div>
                 <img
-                  src={formatImageUrl(img)}
-                  alt={product.name}
-                  style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 12 }} // Adjusted height
+                  src={`${BASE_URL}/media/default-placeholder.png`}
+                  alt="Placeholder"
+                  style={{ width: "100%", height: 200, objectFit: "cover" }}
                 />
               </div>
-            ))
-          ) : (
-            <div>
-              <img
-                src={`${BASE_URL}/media/default-placeholder.png`}
-                alt="Placeholder"
-                style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 12 }} // Adjusted height
-              />
-            </div>
-          )}
-        </Carousel>
+            )}
+          </Carousel>
+        </div>
 
-        <div style={{ textAlign: "center", padding: "12px 0" }}> {/* Reduced padding */}
-          <Title level={5} style={{ marginBottom: 4 }}> {/* Reduced margin */}
+        <div style={{ padding: "20px", textAlign: "left" }}>
+          <Title level={4} style={{ marginBottom: 8, lineHeight: "1.2", fontWeight: 600 }}>
             {product.name}
           </Title>
-          <Paragraph strong style={{ fontSize: 16, color: "#8B4513" }}>
-            ₹{product.price}
+          <Paragraph
+            style={{
+              fontSize: 14,
+              color: "#666",
+              marginBottom: 12,
+              maxHeight: "60px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: "1.5",
+            }}
+          >
+            {product.description}
           </Paragraph>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Typography.Text strong style={{ fontSize: 18, color: "#C27A45" }}>
+              ₹{product.price}
+            </Typography.Text>
+            {product.size && (
+              <Tag color="geekblue" style={{ fontSize: 12, padding: "5px 10px" }}>
+                Size: {product.size}
+              </Tag>
+            )}
+          </div>
         </div>
 
         <Button
           type="primary"
           shape="circle"
           icon={<ShoppingCartOutlined />}
-          style={{ position: "absolute", top: 8, right: 8, boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }} // Adjusted button style
+          size="large"
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log("Add to cart clicked");
+          }}
+          style={{ position: "absolute", bottom: 16, right: 16, boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}
         />
       </Card>
       <ProductModal product={product} visible={modalVisible} onClose={() => setModalVisible(false)} />

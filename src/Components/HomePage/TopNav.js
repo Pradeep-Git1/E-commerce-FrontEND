@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+// TopNav.js
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Avatar, Button, Space, Typography, Badge, Drawer, Menu, Spin, Alert } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import {
-  UserOutlined,
-  MenuOutlined,
-  ShoppingCartOutlined,
-} from "@ant-design/icons";
+import { UserOutlined, MenuOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { getRequest } from "../../Services/api";
 import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
+import { AppContext } from "../../AppContext";
+import UserLogin from "./UserLogin";
 
 const { Title } = Typography;
 const primaryColor = "#593E2F";
@@ -20,10 +19,10 @@ const TopNav = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
   const [showMenuIcon, setShowMenuIcon] = useState(false);
   const navRef = useRef(null);
   const location = useLocation();
+  const { user, cart } = useContext(AppContext);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -38,10 +37,6 @@ const TopNav = () => {
     };
 
     fetchCategories();
-
-    setTimeout(() => {
-      setUser({ name: "John Doe" });
-    }, 1000);
 
     const checkMenuVisibility = () => {
       setShowMenuIcon(window.innerWidth < 992);
@@ -67,6 +62,15 @@ const TopNav = () => {
 
   const selectedCategoryName = getCategoryNameFromPath(location.pathname);
 
+  const handleProfileClick = () => {
+    if (user) {
+      setDrawerContent("profile");
+    } else {
+      setDrawerContent("login");
+    }
+    setDrawerVisible(true);
+  };
+
   return (
     <>
       <div
@@ -85,13 +89,11 @@ const TopNav = () => {
           justifyContent: "space-between",
         }}
       >
-        {/* Logo Section */}
         <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img src="/companylogo.png" alt="Logo" style={{ height: 50, marginRight: 16 }} />
           <Title level={3} style={{ marginBottom: 0, color: primaryColor, fontWeight: 600 }}>Chocolate Factory</Title>
         </Link>
 
-        {/* Centered Categories */}
         {!showMenuIcon && !loading && !error && categories.length > 0 && (
           <div
             style={{
@@ -126,10 +128,8 @@ const TopNav = () => {
         {loading && <Spin />}
         {error && <Alert message={error} type="error" showIcon />}
 
-        {/* User & Cart Section */}
         <Space size="middle">
-          {/* Cart */}
-          <Badge count={2} showZero>
+          <Badge count={cart.length} showZero>
             <ShoppingCartOutlined
               style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
               onClick={() => {
@@ -139,20 +139,13 @@ const TopNav = () => {
             />
           </Badge>
 
-          {/* User Profile */}
-          {user && (
-            <Avatar
-              size="large"
-              icon={<UserOutlined />}
-              style={{ cursor: "pointer", backgroundColor: primaryColor }}
-              onClick={() => {
-                setDrawerContent("profile");
-                setDrawerVisible(true);
-              }}
-            />
-          )}
+          <Avatar
+            size="large"
+            icon={<UserOutlined />}
+            style={{ cursor: "pointer", backgroundColor: primaryColor }}
+            onClick={handleProfileClick}
+          />
 
-          {/* Mobile Menu Icon */}
           {showMenuIcon && (
             <Button
               type="text"
@@ -166,9 +159,8 @@ const TopNav = () => {
         </Space>
       </div>
 
-      {/* Drawer for Mobile Menu */}
       <Drawer
-        title={drawerContent === "profile" ? "Your Account" : drawerContent === "cart" ? "Your Cart" : "Menu"}
+        title={drawerContent === "profile" ? "Your Account" : drawerContent === "cart" ? "Your Cart" : drawerContent === "login" ? "Login" : "Menu"}
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
@@ -189,6 +181,7 @@ const TopNav = () => {
             ))}
           </Menu>
         )}
+        {drawerContent === "login" && <UserLogin />}
       </Drawer>
     </>
   );

@@ -1,9 +1,12 @@
 import HomePage from "./Components/HomePage/HomePage";
+import { AppProvider } from "./AppContext";
 
 function App() {
   return (
     <div className="App">
-      <HomePage/>
+      <AppProvider>
+        <HomePage />
+      </AppProvider>
     </div>
   );
 }

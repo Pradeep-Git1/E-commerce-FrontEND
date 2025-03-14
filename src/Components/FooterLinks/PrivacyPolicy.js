@@ -7,78 +7,69 @@ const { Panel } = Collapse;
 const PrivacyPolicy = () => {
   return (
     <div className="container mt-5">
-      <Title level={2} className="text-center text-brown">🔒 Privacy Policy</Title>
+      <Title level={2} className="text-center text-brown">
+        🔒 Privacy Policy
+      </Title>
       <Paragraph className="text-center text-muted">
-        Your privacy is important to us. Read below to understand how we handle your data.
+        Chocosing is committed to safeguarding your personal information. Read below to understand how we handle your data.
       </Paragraph>
 
       <Collapse accordion className="mt-4 shadow-sm">
-        {/* 1. Introduction */}
-        <Panel header="1. Introduction" key="1">
+        {/* 1. Scope of Definition */}
+        <Panel header="1. Scope of Definition" key="1">
           <Paragraph>
-            This Privacy Policy explains how we collect, use, and protect your personal information when you use our website.
+            Chocosing is committed to safeguarding your personal information as you use our website. Before you use the website operated by Chocosing, please review this Privacy Policy carefully. We prioritize your privacy and value the trust you place in us. By using our website and the services we offer, you consent to the collection, use, and disclosure of your information as described in this Privacy Policy.
           </Paragraph>
         </Panel>
 
         {/* 2. Information Collection */}
-        <Panel header="2. What Information Do We Collect?" key="2">
+        <Panel header="2. Information Collection" key="2">
           <Paragraph>
-            We collect data including **name, email, phone number, and payment details** when you place an order or sign up for our services.
-          </Paragraph>
-        </Panel>
-
-        {/* 3. How We Use Your Data */}
-        <Panel header="3. How Do We Use Your Information?" key="3">
-          <Paragraph>
-            We use your data to:
+            When you use the Chocosing website, we collect the following information:
             <ul>
-              <li>Process and deliver orders</li>
-              <li>Improve customer service</li>
-              <li>Send updates and promotional offers</li>
-              <li>Enhance website security</li>
+              <li><strong>Personal Information:</strong> Name, mobile number, email address, and personal address.</li>
+              <li><strong>Billing Details:</strong> Address and payment method. Please note that we do not collect credit/debit card numbers, expiry dates, or other card details. Our online payment partner, CashFree, securely processes this information.</li>
+              <li><strong>Automatically Collected Information:</strong> We may collect information through technologies like Internet Protocol (IP) addresses and cookies without your active submission. These methods do not store or collect personal data.</li>
             </ul>
           </Paragraph>
         </Panel>
 
-        {/* 4. Data Protection */}
-        <Panel header="4. How Do We Protect Your Data?" key="4">
+        {/* 3. Use of Information */}
+        <Panel header="3. Use of Information" key="3">
           <Paragraph>
-            We use **encryption, secure servers, and restricted access** to protect your personal data from unauthorized access.
+            We use the collected information to:
+            <ul>
+              <li><strong>Personalize Your Experience:</strong> We tailor the website to your preferences and improve our services based on your feedback.</li>
+              <li><strong>Communicate:</strong> We administer contests, promotions, surveys, and other site features. You will also receive periodic emails. You can opt out anytime by updating your preferences.</li>
+              <li><strong>Payment Processing:</strong> We handle payments and notify you about changes to our site and services to ensure compliance with our terms and applicable laws.</li>
+              <li><strong>No Third-Party Marketing:</strong> We do not sell or share your information for third-party marketing purposes.</li>
+            </ul>
           </Paragraph>
         </Panel>
 
-        {/* 5. Cookies */}
-        <Panel header="5. Do We Use Cookies?" key="5">
+        {/* 4. Third-party services */}
+        <Panel header="4. Third-party services" key="4">
           <Paragraph>
-            Yes, we use **cookies to improve your browsing experience** by remembering preferences and tracking website traffic.
+            Our website may contain links to third-party websites, applications, and services. Please review the privacy policies of these third parties before engaging with their services. We only disclose your information in the following cases:
+            <ul>
+              <li><strong>Business Transitions:</strong> If we sell, merge, or restructure our business, we may transfer your information to a third party. We will ensure your privacy rights remain protected.</li>
+              <li><strong>Verification:</strong> We may allow third-party service providers to process your data for verification purposes. They must follow our security and data protection standards.</li>
+              <li><strong>External Links:</strong> Our website contains links to other websites, such as <a href="https://www.cashfree.com/privacy/">CashFree</a>. This Privacy Policy does not apply to those sites. We recommend you to review their privacy policies.</li>
+            </ul>
           </Paragraph>
         </Panel>
 
-        {/* 6. Third-Party Sharing */}
-        <Panel header="6. Do We Share Your Information?" key="6">
+        {/* 5. Policy Changes */}
+        <Panel header="5. Policy Changes" key="5">
           <Paragraph>
-            We do not **sell or trade** your personal information. However, we may share data with **trusted partners** for payment processing and delivery.
+            Any changes to our information collection or usage practices will be communicated via Email, SMS, Mobile application, or website notifications.
           </Paragraph>
         </Panel>
 
-        {/* 7. Your Rights */}
-        <Panel header="7. Your Rights & Choices" key="7">
+        {/* 6. Contact Us */}
+        <Panel header="6. Contact Us" key="6">
           <Paragraph>
-            You have the right to **access, update, or delete** your personal data. Contact us if you wish to make any changes.
-          </Paragraph>
-        </Panel>
-
-        {/* 8. Policy Updates */}
-        <Panel header="8. Changes to This Policy" key="8">
-          <Paragraph>
-            We may update this policy from time to time. We encourage users to review it periodically for any changes.
-          </Paragraph>
-        </Panel>
-
-        {/* 9. Contact Us */}
-        <Panel header="9. Contact Us" key="9">
-          <Paragraph>
-            If you have any questions regarding this Privacy Policy, please reach out to us at **support@example.com**.
+            For any questions about this privacy statement, please reach out to us at <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>.
           </Paragraph>
         </Panel>
       </Collapse>

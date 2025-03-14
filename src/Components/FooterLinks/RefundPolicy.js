@@ -7,45 +7,57 @@ const { Panel } = Collapse;
 const RefundPolicy = () => {
   return (
     <div className="container mt-5">
-      <Title level={2} className="text-center text-brown">🔄 Refund Policy</Title>
+      <Title level={2} className="text-center text-brown">
+        🔄 Refund & Cancellation Policy
+      </Title>
       <Paragraph className="text-center text-muted">
-        We aim for 100% customer satisfaction. Read below for our refund & return policy.
+        We aim for 100% customer satisfaction. Read below for our refund, return, and cancellation policy.
       </Paragraph>
 
       <Collapse accordion className="mt-4 shadow-sm">
-        {/* 1. Eligibility for Refund */}
-        <Panel header="1. Am I Eligible for a Refund?" key="1">
+        {/* Cancellation */}
+        <Panel header="1. Order Cancellation Policy" key="1">
           <Paragraph>
-            Refunds are applicable if:
+            <strong>General Policy:</strong> Once you place an order, we cannot cancel it. However, you can cancel your order within two hours of placing it. Depending on your cancellation history, Chocosing may deny a refund, even if canceled within the two-hour window.
+          </Paragraph>
+          <Paragraph>
+            <strong>Cancellation Process:</strong> You can cancel your order by calling Customer Care or emailing <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>. If you cancel within two hours of placing the order, we will process the cancellation; otherwise, we will consider the order as successful.
+          </Paragraph>
+          <Paragraph>
+            <strong>Chocosing’s Right to Review:</strong> We reserve the right to assess cancellation requests. If your request meets our conditions, we will process the cancellation and issue a refund.
+          </Paragraph>
+          <Paragraph>
+            <strong>Conditions for Chocosing to Cancel Orders:</strong>
             <ul>
-              <li>You received a damaged or incorrect product.</li>
-              <li>Your order was not delivered within the promised timeframe.</li>
-              <li>The product does not match the description on our website.</li>
+              <li>We are unable to contact you at the time of delivery.</li>
+              <li>We fail to deliver due to insufficient information or authorization from you.</li>
+              <li>You provide an incorrect address or request delivery outside our service area.</li>
             </ul>
           </Paragraph>
         </Panel>
 
-        {/* 2. Refund Process */}
-        <Panel header="2. How Do I Request a Refund?" key="2">
+        {/* Refund */}
+        <Panel header="2. Refund Policy" key="2">
           <Paragraph>
-            To request a refund:
-            <ul>
-              <li>Email us at **support@example.com** with your order details.</li>
-              <li>Attach photos if the product is damaged or incorrect.</li>
-              <li>We will verify your claim and process the refund within **7 business days**.</li>
-            </ul>
+            <strong>Damaged or Tampered Items:</strong> If we deliver a damaged or tampered item, you can request a refund. Please contact Customer Care or email a photo of the damaged items to <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>.
+          </Paragraph>
+          <Paragraph>
+            <strong>Refund Assessment:</strong> We will review the issue and assess your eligibility based on the conditions mentioned. If we approve your request, you will receive up to 100% of the order value. Our refund decisions are final.
+          </Paragraph>
+          <Paragraph>
+            <strong>Refund Process:</strong> Once we approve your refund request, it may take 7-10 business days for the amount to be credited back to your original payment method. We strive to make your refund process smooth and efficient.
           </Paragraph>
         </Panel>
 
         {/* 3. Refund Timeline */}
         <Panel header="3. When Will I Receive My Refund?" key="3">
           <Paragraph>
-            Refunds are processed within **7-10 business days** after approval.
+            Refunds are processed within 7-10 business days after approval.
             The time it takes for the funds to reflect depends on your payment method:
             <ul>
-              <li>**Credit/Debit Card** – 5-7 business days</li>
-              <li>**Bank Transfer** – 7-10 business days</li>
-              <li>**Wallet Payment** – 1-2 business days</li>
+              <li><strong>Credit/Debit Card</strong> – 5-7 business days</li>
+              <li><strong>Bank Transfer</strong> – 7-10 business days</li>
+              <li><strong>Wallet Payment</strong> – 1-2 business days</li>
             </ul>
           </Paragraph>
         </Panel>
@@ -53,7 +65,7 @@ const RefundPolicy = () => {
         {/* 4. Non-Refundable Cases */}
         <Panel header="4. What Purchases Are Non-Refundable?" key="4">
           <Paragraph>
-            Refunds **will not be issued** for:
+            Refunds <strong>will not be issued</strong> for:
             <ul>
               <li>Opened or consumed food items.</li>
               <li>Orders where incorrect shipping information was provided.</li>
@@ -65,24 +77,18 @@ const RefundPolicy = () => {
         {/* 5. Exchange Policy */}
         <Panel header="5. Can I Exchange Instead of a Refund?" key="5">
           <Paragraph>
-            Yes! If you received a defective or incorrect product, you can request an **exchange** instead of a refund.
+            Yes! If you received a defective or incorrect product, you can request an <strong>exchange</strong> instead of a refund.
           </Paragraph>
         </Panel>
 
-        {/* 6. Cancellations */}
-        <Panel header="6. Can I Cancel My Order?" key="6">
-          <Paragraph>
-            Orders can only be canceled within **24 hours of placement**. After this period, cancellations are not possible.
-          </Paragraph>
-        </Panel>
-
-        {/* 7. Contact for Support */}
-        <Panel header="7. How Can I Contact Customer Support?" key="7">
+        {/* 6. Contact for Support */}
+        <Panel header="6. How Can I Contact Customer Support?" key="6">
           <Paragraph>
             For any refund or exchange queries, please contact us at:
             <br />
-            📧 **support@example.com**  
-            📞 **+1-234-567-8901**
+            📧 <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>
+            <br />
+            📞 +1-234-567-8901
           </Paragraph>
         </Panel>
       </Collapse>

@@ -1,36 +1,20 @@
-import React from "react";
+import React, { useContext } from "react";
+import {  LogoutOutlined } from "@ant-design/icons";
 import { List, Divider } from "antd";
-import {
-  HomeOutlined,
-  FileTextOutlined,
-  HeartOutlined,
-  MessageOutlined,
-  GiftOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import { AppContext } from "../../AppContext";
 
 const UserMenu = ({ user }) => {
-  if (!user) return null;
+  const { logout } = useContext(AppContext);
 
   return (
     <List>
-      <List.Item>
-        <HomeOutlined className="me-2" /> Addresses
-      </List.Item>
-      <List.Item>
-        <FileTextOutlined className="me-2" /> Orders
-      </List.Item>
-      <List.Item>
-        <HeartOutlined className="me-2" /> Wishlist
-      </List.Item>
-      <List.Item>
-        <MessageOutlined className="me-2" /> Talk to Us
-      </List.Item>
-      <List.Item>
-        <GiftOutlined className="me-2" /> Gift Cards
-      </List.Item>
+      <List.Item>Addresses</List.Item>
+      <List.Item>Orders</List.Item>
+      <List.Item>Wishlist</List.Item>
+      <List.Item>Talk to Us</List.Item>
+      <List.Item>Gift Cards</List.Item>
       <Divider />
-      <List.Item className="text-danger fw-bold" onClick={() => alert("Logging Out")}>
+      <List.Item className="text-danger fw-bold" onClick={logout}>
         <LogoutOutlined className="me-2" /> Logout
       </List.Item>
     </List>
@@ -38,3 +22,4 @@ const UserMenu = ({ user }) => {
 };
 
 export default UserMenu;
+
