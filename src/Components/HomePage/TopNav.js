@@ -1,19 +1,23 @@
-// TopNav.js
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Avatar, Button, Space, Typography, Badge, Drawer, Menu, Spin, Alert } from "antd";
 import { Link, useLocation } from "react-router-dom";
 import { UserOutlined, MenuOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import { getRequest } from "../../Services/api";
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUser } from "../../app/features/user/userSlice";
+import { fetchCart } from "../../app/features/cart/cartSlice";
 import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
-import { AppContext } from "../../AppContext";
 import UserLogin from "./UserLogin";
-
+import { getRequest } from "../../Services/api";
 const { Title } = Typography;
 const primaryColor = "#593E2F";
 const secondaryColor = "#D2B48C";
 
 const TopNav = () => {
+  const user = useSelector((state) => state.user.data);
+  const cartItems = useSelector((state) =>
+    user ? state.cart.items : state.cart.anonymousItems
+  );
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerContent, setDrawerContent] = useState("menu");
   const [categories, setCategories] = useState([]);
@@ -22,7 +26,7 @@ const TopNav = () => {
   const [showMenuIcon, setShowMenuIcon] = useState(false);
   const navRef = useRef(null);
   const location = useLocation();
-  const { user, cart } = useContext(AppContext);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,6 +54,10 @@ const TopNav = () => {
     };
   }, []);
 
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch, user]);
+
   const getCategoryNameFromPath = (path) => {
     const parts = path.split("/");
     if (parts[1] === "category" && categories.length > 0) {
@@ -71,6 +79,13 @@ const TopNav = () => {
     setDrawerVisible(true);
   };
 
+  const handleLoginSuccess = () => {
+    dispatch(fetchUser());
+    dispatch(fetchCart());
+    setDrawerContent("profile");
+    setDrawerVisible(false);
+  };
+
   return (
     <>
       <div
@@ -89,9 +104,21 @@ const TopNav = () => {
           justifyContent: "space-between",
         }}
       >
-        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src="/companylogo.png" alt="Logo" style={{ height: 50, marginRight: 16 }} />
-          <Title level={3} style={{ marginBottom: 0, color: primaryColor, fontWeight: 600 }}>Chocolate Factory</Title>
+        <Link
+          to="/"
+          style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
+        >
+          <img
+            src="/companylogo.png"
+            alt="Logo"
+            style={{ height: 50, marginRight: 16 }}
+          />
+          <Title
+            level={3}
+            style={{ marginBottom: 0, color: primaryColor, fontWeight: 600 }}
+          >
+            Chocolate Factory
+          </Title>
         </Link>
 
         {!showMenuIcon && !loading && !error && categories.length > 0 && (
@@ -114,7 +141,8 @@ const TopNav = () => {
                   color: primaryColor,
                   fontWeight: selectedCategoryName === category.name ? "600" : "400",
                   textDecoration: "none",
-                  backgroundColor: selectedCategoryName === category.name ? secondaryColor : "transparent",
+                  backgroundColor:
+                    selectedCategoryName === category.name ? secondaryColor : "transparent",
                   transition: "background-color 0.3s ease, transform 0.2s ease",
                   fontSize: "15px",
                 }}
@@ -129,7 +157,7 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Space size="middle">
-          <Badge count={cart.length} showZero>
+          <Badge count={cartItems.length} showZero>
             <ShoppingCartOutlined
               style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
               onClick={() => {
@@ -160,7 +188,15 @@ const TopNav = () => {
       </div>
 
       <Drawer
-        title={drawerContent === "profile" ? "Your Account" : drawerContent === "cart" ? "Your Cart" : drawerContent === "login" ? "Login" : "Menu"}
+        title={
+          drawerContent === "profile"
+            ? "Your Account"
+            : drawerContent === "cart"
+            ? "Your Cart"
+            : drawerContent === "login"
+            ? "Login"
+            : "Menu"
+        }
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
@@ -174,14 +210,17 @@ const TopNav = () => {
           <Menu mode="vertical" selectable={false}>
             {categories.map((category) => (
               <Menu.Item key={category.id}>
-                <Link to={`/category/${category.id}`} style={{ fontWeight: 600, color: primaryColor, textDecoration: "none" }}>
+                <Link
+                  to={`/category/${category.id}`}
+                  style={{ fontWeight: 600, color: primaryColor, textDecoration: "none" }}
+                >
                   {category.name}
                 </Link>
               </Menu.Item>
             ))}
           </Menu>
         )}
-        {drawerContent === "login" && <UserLogin />}
+        {drawerContent === "login" && <UserLogin onLoginSuccess={handleLoginSuccess} />}
       </Drawer>
     </>
   );

@@ -1,12 +1,14 @@
+import React from "react";
 import HomePage from "./Components/HomePage/HomePage";
-import { AppProvider } from "./AppContext";
+import { Provider } from "react-redux"; // Import Provider
+import { store } from "./app/store";
 
 function App() {
   return (
     <div className="App">
-      <AppProvider>
+      <Provider store={store}>
         <HomePage />
-      </AppProvider>
+      </Provider>
     </div>
   );
 }
