@@ -4,52 +4,71 @@ import { getRequest, postRequest, removeToken, setToken } from '../../../Service
 import { message } from 'antd';
 import { mergeCarts } from '../cart/cartSlice';
 
-export const fetchUser = createAsyncThunk('user/fetchUser', async (_, { rejectWithValue }) => {
-  try {
-    const userData = await getRequest('/user-profile/');
-    return userData;
-  } catch (err) {
-    removeToken();
-    return rejectWithValue('Failed to load user data.');
-  }
-});
-
-export const login = createAsyncThunk('user/login', async ({ identifier, password, otp = false }, { dispatch, rejectWithValue }) => {
+export const fetchUser = createAsyncThunk(
+  'user/fetchUser',
+  async (_, { rejectWithValue }) => {
     try {
-        const response = await postRequest(otp ? '/verify-otp/' : '/login/', { identifier, password });
-        setToken(response.token);
-        localStorage.setItem('refreshToken', response.refresh_token);
-        message.success('Welcome back!');
-        dispatch(mergeCarts()); // Dispatch mergeCarts after login
-        return response.user;
+      const userData = await getRequest('/user-profile/');
+      return userData;
     } catch (err) {
-        message.error('Login failed. Please check your details.');
-        return rejectWithValue('Login failed.');
+      if (err.response) {
+        return rejectWithValue(err.response.data);
+      } else if (err.request) {
+        return rejectWithValue('Network error. Please try again.');
+      } else {
+        return rejectWithValue('An unexpected error occurred.');
+      }
     }
-});
-
-
-export const sendOtp = createAsyncThunk('user/sendOtp', async (identifier, { rejectWithValue }) => {
-  try {
-    await postRequest('/send-otp/', { identifier });
-    message.success('OTP sent successfully!');
-    return;
-  } catch (err) {
-    message.error('Failed to send OTP.');
-    return rejectWithValue('Failed to send OTP.');
   }
-});
+);
 
-export const resetPassword = createAsyncThunk('user/resetPassword', async (email, { rejectWithValue }) => {
-  try {
-    await postRequest('/reset-password/', { email });
-    message.success('Password reset link sent.');
-    return;
-  } catch (err) {
-    message.error('Failed to send reset link.');
-    return rejectWithValue('Failed to send reset link.');
+export const login = createAsyncThunk(
+  'user/login',
+  async ({ identifier, password, otp = false }, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await postRequest(otp ? '/verify-otp/' : '/login/', {
+        identifier,
+        password,
+      });
+      setToken(response.token);
+      localStorage.setItem('refreshToken', response.refresh_token);
+      message.success('Welcome back!');
+      dispatch(mergeCarts());
+      return response.user;
+    } catch (err) {
+      message.error('Login failed. Please check your details.');
+      return rejectWithValue('Login failed.');
+    }
   }
-});
+);
+
+export const sendOtp = createAsyncThunk(
+  'user/sendOtp',
+  async (identifier, { rejectWithValue }) => {
+    try {
+      await postRequest('/send-otp/', { identifier });
+      message.success('OTP sent successfully!');
+      return;
+    } catch (err) {
+      message.error('Failed to send OTP.');
+      return rejectWithValue('Failed to send OTP.');
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'user/resetPassword',
+  async (email, { rejectWithValue }) => {
+    try {
+      await postRequest('/reset-password/', { email });
+      message.success('Password reset link sent.');
+      return;
+    } catch (err) {
+      message.error('Failed to send reset link.');
+      return rejectWithValue('Failed to send reset link.');
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: 'user',

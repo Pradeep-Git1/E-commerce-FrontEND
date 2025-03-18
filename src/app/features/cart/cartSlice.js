@@ -27,11 +27,12 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState
     }
 });
 
-export const addToCart = createAsyncThunk('cart/addToCart', async (product, { getState, dispatch, rejectWithValue }) => {
+export const addToCart = createAsyncThunk('cart/addToCart', async (productWithQuantity, { getState, dispatch, rejectWithValue }) => {
     const user = getState().user.data;
+    const { product, quantity } = productWithQuantity; // Destructure product and quantity
     if (user) {
         try {
-            await postRequest('/cart/add/', { product_id: product.id, quantity: 1 });
+            await postRequest('/cart/add/', { product_id: product.id, quantity: quantity }); // Use quantity
             message.success('Product added to cart');
             dispatch(fetchCart());
             return;
@@ -41,9 +42,18 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (product, { ge
         }
     } else {
         const anonymousCart = getAnonymousCart();
-        const newAnonymousCart = [...anonymousCart, { ...product, quantity: 1 }];
-        saveAnonymousCart(newAnonymousCart);
-        return newAnonymousCart;
+        const existingProductIndex = anonymousCart.findIndex(item => item.id === product.id);
+
+        if (existingProductIndex !== -1) {
+            // Product already exists in the cart, update quantity
+            anonymousCart[existingProductIndex].quantity += quantity;
+        } else {
+            // Product does not exist, add it
+            anonymousCart.push({ ...product, quantity: quantity });
+        }
+        
+        saveAnonymousCart(anonymousCart);
+        return anonymousCart;
     }
 });
 
@@ -99,21 +109,24 @@ const cartSlice = createSlice({
         builder
             .addCase(fetchCart.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.items = action.payload.cart.map((item, index) => ({
-                    id: index + 1,
+                state.items = action.payload.cart.map((item) => ({
+                    id: item.product_id,
                     name: item.product_name,
                     quantity: item.quantity,
-                    price: item.subtotal / item.quantity,
-                    image: '/default-product-image.jpg',
+                    price: item.price,
+                    image: item.image_url,
+                    item_id: item.product_id,
                 }));
             })
             .addCase(addToCart.fulfilled, (state, action) => {
-                if (!state.user) {
+                // Access getState from the second argument of the thunk
+                if (!action.meta.arg.user) {
                     state.anonymousItems = action.payload;
                 }
             })
             .addCase(removeFromCart.fulfilled, (state, action) => {
-                if (!state.user) {
+                // Access getState from the second argument of the thunk
+                 if (!action.meta.arg.user) {
                     state.anonymousItems = action.payload;
                 }
             })

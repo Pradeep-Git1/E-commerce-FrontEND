@@ -1,8 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Avatar, Button, Space, Typography, Badge, Drawer, Menu, Spin, Alert } from "antd";
+import {
+  Avatar,
+  Button,
+  Space,
+  Typography,
+  Badge,
+  Drawer,
+  Menu,
+  Spin,
+  Alert,
+} from "antd";
 import { Link, useLocation } from "react-router-dom";
-import { UserOutlined, MenuOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import { useSelector, useDispatch } from 'react-redux';
+import {
+  UserOutlined,
+  MenuOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
+import { useSelector, useDispatch } from "react-redux";
 import { fetchUser } from "../../app/features/user/userSlice";
 import { fetchCart } from "../../app/features/cart/cartSlice";
 import UserMenu from "./UserMenu";
@@ -85,7 +99,7 @@ const TopNav = () => {
     setDrawerContent("profile");
     setDrawerVisible(false);
   };
-
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : []; 
   return (
     <>
       <div
@@ -106,7 +120,11 @@ const TopNav = () => {
       >
         <Link
           to="/"
-          style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+          }}
         >
           <img
             src="/companylogo.png"
@@ -139,10 +157,13 @@ const TopNav = () => {
                   margin: "0 10px",
                   borderRadius: "20px",
                   color: primaryColor,
-                  fontWeight: selectedCategoryName === category.name ? "600" : "400",
+                  fontWeight:
+                    selectedCategoryName === category.name ? "600" : "400",
                   textDecoration: "none",
                   backgroundColor:
-                    selectedCategoryName === category.name ? secondaryColor : "transparent",
+                    selectedCategoryName === category.name
+                      ? secondaryColor
+                      : "transparent",
                   transition: "background-color 0.3s ease, transform 0.2s ease",
                   fontSize: "15px",
                 }}
@@ -157,7 +178,10 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Space size="middle">
-          <Badge count={cartItems.length} showZero>
+          
+          
+          <Badge count={safeCartItems.length} showZero>
+            
             <ShoppingCartOutlined
               style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
               onClick={() => {
@@ -166,18 +190,18 @@ const TopNav = () => {
               }}
             />
           </Badge>
-
           <Avatar
             size="large"
             icon={<UserOutlined />}
             style={{ cursor: "pointer", backgroundColor: primaryColor }}
             onClick={handleProfileClick}
           />
-
           {showMenuIcon && (
             <Button
               type="text"
-              icon={<MenuOutlined style={{ fontSize: 24, color: primaryColor }} />}
+              icon={
+                <MenuOutlined style={{ fontSize: 24, color: primaryColor }} />
+              }
               onClick={() => {
                 setDrawerContent("menu");
                 setDrawerVisible(true);
@@ -202,7 +226,10 @@ const TopNav = () => {
         open={drawerVisible}
         width={320}
         bodyStyle={{ padding: "24px" }}
-        headerStyle={{ backgroundColor: secondaryColor, borderBottom: "1px solid #EAEAEA" }}
+        headerStyle={{
+          backgroundColor: secondaryColor,
+          borderBottom: "1px solid #EAEAEA",
+        }}
       >
         {drawerContent === "profile" && <UserMenu user={user} />}
         {drawerContent === "cart" && <CartMenu />}
@@ -212,7 +239,11 @@ const TopNav = () => {
               <Menu.Item key={category.id}>
                 <Link
                   to={`/category/${category.id}`}
-                  style={{ fontWeight: 600, color: primaryColor, textDecoration: "none" }}
+                  style={{
+                    fontWeight: 600,
+                    color: primaryColor,
+                    textDecoration: "none",
+                  }}
                 >
                   {category.name}
                 </Link>
@@ -220,7 +251,9 @@ const TopNav = () => {
             ))}
           </Menu>
         )}
-        {drawerContent === "login" && <UserLogin onLoginSuccess={handleLoginSuccess} />}
+        {drawerContent === "login" && (
+          <UserLogin onLoginSuccess={handleLoginSuccess} />
+        )}
       </Drawer>
     </>
   );

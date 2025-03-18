@@ -1,33 +1,36 @@
 import React, { useState } from "react";
-import { Modal, Carousel, Typography, Button, Space, Divider, message, notification } from "antd";
+import { Modal, Carousel, Typography, Button, Space, Divider } from "antd";
 import { ShoppingCartOutlined, DollarCircleOutlined, InfoCircleOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
-import { useDispatch } from 'react-redux';
-import { addToCart } from "../../app/features/cart/cartSlice"; // Import addToCart
+import { useDispatch, useSelector } from 'react-redux'; // Import useSelector
+import { addToCart } from "../../app/features/cart/cartSlice";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 const BASE_URL = "http://localhost:8000";
-const { Text } = Typography;
+
 const ProductModal = ({ product, visible, onClose }) => {
     const [quantity, setQuantity] = useState(1);
     const dispatch = useDispatch();
+    const user = useSelector(state => state.user.data); // Get user from Redux store
 
     const handleIncrement = () => {
-        setQuantity((prev) => prev + 1);
+        setQuantity(prev => prev + 1);
     };
 
     const handleDecrement = () => {
-        setQuantity((prev) => Math.max(1, prev - 1));
+        setQuantity(prev => Math.max(1, prev - 1));
     };
 
     const handleAddToCart = () => {
-      console.log("Product to add:", { ...product, quantity }); // Debugging: Log product
-      dispatch(addToCart({ ...product, quantity }));
-      onClose();
+        if (product) {
+            dispatch(addToCart({ product, quantity }, { meta: { arg: { user: user } } })); // Pass user in meta
+            console.log(`Adding to cart: Product ID ${product.id}, Quantity ${quantity}`);
+            onClose();
+        }
     };
 
     if (!product) return null;
 
-    const formatImageUrl = (img) => (img.startsWith("http") ? img : `${BASE_URL}${img}`);
+    const formatImageUrl = (img) => img.startsWith("http") ? img : `${BASE_URL}${img}`;
 
     return (
         <Modal
@@ -38,7 +41,6 @@ const ProductModal = ({ product, visible, onClose }) => {
             width={600}
             bodyStyle={{ padding: "10px" }}
         >
-            {/* Carousel and other content */}
             <Carousel autoplay>
                 {product.images.length > 0 ? (
                     product.images.map((img, index) => (

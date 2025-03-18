@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Card, Typography, Carousel, Button, Tag, Space } from "antd";
+import React, { useState, useEffect } from "react";
+import { Typography, Carousel, Button, Tag } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ProductModal from "./ProductModal";
 
@@ -8,23 +8,88 @@ const BASE_URL = "http://localhost:8000";
 
 const ProductCard = ({ product }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [jiggle, setJiggle] = useState(false);
   const formatImageUrl = (img) => (img.startsWith("http") ? img : `${BASE_URL}${img}`);
   const transitionTime = Math.floor(Math.random() * (7000 - 4000 + 1)) + 4000;
 
+  useEffect(() => {
+    const jiggleInterval = setInterval(() => {
+      if (Math.random() < 0.3) {
+        setJiggle(true);
+        setTimeout(() => setJiggle(false), 300);
+      }
+    }, Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000);
+
+    return () => clearInterval(jiggleInterval);
+  }, []);
+
+  const jiggleStyle = {
+    animation: jiggle ? "jiggle 0.3s ease-in-out, pulse 1.5s infinite" : "none",
+    transformOrigin: "center",
+  };
+
+  const cardStyle = {
+    borderRadius: 16,
+    overflow: "hidden",
+    position: "relative",
+    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.18)",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    transition: "transform 0.3s ease-in-out",
+  };
+
+  const handleMouseEnter = () => {
+    setShowCart(true);
+    // Create a new style object
+    const newStyle = { ...cardStyle, transform: "scale(1.03)" };
+    setCardStyle(newStyle);
+  };
+
+  const handleMouseLeave = () => {
+    setShowCart(false);
+    // Create a new style object
+    const newStyle = { ...cardStyle, transform: "scale(1)" };
+    setCardStyle(newStyle);
+  };
+
+  const [currentCardStyle, setCardStyle] = useState(cardStyle)
+
   return (
     <>
-      <Card
+      <style>
+        {`
+          @keyframes jiggle {
+            0%, 100% {
+              transform: rotate(0deg);
+            }
+            25% {
+              transform: rotate(-10deg);
+            }
+            75% {
+              transform: rotate(10deg);
+            }
+          }
+          @keyframes pulse {
+            0% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.1);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+        `}
+      </style>
+      <div
         hoverable
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={currentCardStyle}
         onClick={() => setModalVisible(true)}
-        style={{
-          borderRadius: 16,
-          overflow: "hidden",
-          position: "relative",
-          boxShadow: "0 6px 12px rgba(0, 0, 0, 0.18)",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
       >
         <div style={{ flex: 1 }}>
           <Carousel autoplay autoplaySpeed={transitionTime} effect="fade">
@@ -80,18 +145,18 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
 
-        <Button
-          type="primary"
-          shape="circle"
-          icon={<ShoppingCartOutlined />}
-          size="large"
-          onClick={(e) => {
-            e.stopPropagation();
-            console.log("Add to cart clicked");
-          }}
-          style={{ position: "absolute", bottom: 16, right: 16, boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}
-        />
-      </Card>
+        {showCart && (
+          <Button
+            type="primary"
+            shape="circle"
+            icon={<ShoppingCartOutlined style={jiggleStyle} />}
+            size="large"
+            onClick={() => setModalVisible(true)}
+            style={{ position: "absolute", bottom: 16, right: 16, boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}
+          />
+        )}
+      </div>
+
       <ProductModal product={product} visible={modalVisible} onClose={() => setModalVisible(false)} />
     </>
   );
