@@ -1,4 +1,3 @@
-// src/app/features/cart/cartSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getRequest, postRequest } from '../../../Services/api';
 import { message } from 'antd';
@@ -29,10 +28,10 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState
 
 export const addToCart = createAsyncThunk('cart/addToCart', async (productWithQuantity, { getState, dispatch, rejectWithValue }) => {
     const user = getState().user.data;
-    const { product, quantity } = productWithQuantity; // Destructure product and quantity
+    const { product, quantity } = productWithQuantity;
     if (user) {
         try {
-            await postRequest('/cart/add/', { product_id: product.id, quantity: quantity }); // Use quantity
+            await postRequest('/cart/add/', { product_id: product.id, quantity: quantity });
             message.success('Product added to cart');
             dispatch(fetchCart());
             return;
@@ -45,13 +44,11 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (productWithQu
         const existingProductIndex = anonymousCart.findIndex(item => item.id === product.id);
 
         if (existingProductIndex !== -1) {
-            // Product already exists in the cart, update quantity
-            anonymousCart[existingProductIndex].quantity += quantity;
+            anonymousCart[existingProductIndex].quantity = quantity;
         } else {
-            // Product does not exist, add it
             anonymousCart.push({ ...product, quantity: quantity });
         }
-        
+
         saveAnonymousCart(anonymousCart);
         return anonymousCart;
     }
@@ -71,7 +68,7 @@ export const removeFromCart = createAsyncThunk('cart/removeFromCart', async (ite
         }
     } else {
         let anonymousCart = getAnonymousCart();
-        anonymousCart = anonymousCart.filter((item, index) => index !== itemId);
+        anonymousCart = anonymousCart.filter((item) => item.id !== itemId);
         saveAnonymousCart(anonymousCart);
         return anonymousCart;
     }
@@ -119,14 +116,12 @@ const cartSlice = createSlice({
                 }));
             })
             .addCase(addToCart.fulfilled, (state, action) => {
-                // Access getState from the second argument of the thunk
                 if (!action.meta.arg.user) {
                     state.anonymousItems = action.payload;
                 }
             })
             .addCase(removeFromCart.fulfilled, (state, action) => {
-                // Access getState from the second argument of the thunk
-                 if (!action.meta.arg.user) {
+                if (!action.meta.arg.user) {
                     state.anonymousItems = action.payload;
                 }
             })
@@ -136,6 +131,12 @@ const cartSlice = createSlice({
             })
             .addCase(fetchCart.rejected, (state, action) => {
                 state.isLoading = false;
+                state.error = action.payload;
+            })
+            .addCase(mergeCarts.fulfilled, (state) => {
+                state.anonymousItems = [];
+            })
+            .addCase(mergeCarts.rejected, (state, action) => {
                 state.error = action.payload;
             });
     },

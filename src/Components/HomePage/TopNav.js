@@ -23,6 +23,7 @@ import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
 import UserLogin from "./UserLogin";
 import { getRequest } from "../../Services/api";
+
 const { Title } = Typography;
 const primaryColor = "#593E2F";
 const secondaryColor = "#D2B48C";
@@ -41,6 +42,8 @@ const TopNav = () => {
   const navRef = useRef(null);
   const location = useLocation();
   const dispatch = useDispatch();
+  const [badgeJiggle, setBadgeJiggle] = useState(false);
+  const previousCartItems = useRef(cartItems);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -72,6 +75,14 @@ const TopNav = () => {
     dispatch(fetchCart());
   }, [dispatch, user]);
 
+  useEffect(() => {
+    if (previousCartItems.current !== cartItems) {
+      setBadgeJiggle(true);
+      setTimeout(() => setBadgeJiggle(false), 500);
+      previousCartItems.current = cartItems;
+    }
+  }, [cartItems]);
+
   const getCategoryNameFromPath = (path) => {
     const parts = path.split("/");
     if (parts[1] === "category" && categories.length > 0) {
@@ -99,7 +110,15 @@ const TopNav = () => {
     setDrawerContent("profile");
     setDrawerVisible(false);
   };
-  const safeCartItems = Array.isArray(cartItems) ? cartItems : []; 
+
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+
+  const badgeStyle = {
+    transition: "transform 0.3s ease",
+    transform: badgeJiggle ? "scale(10)" : "scale(1)",
+        
+  };
+
   return (
     <>
       <div
@@ -110,7 +129,7 @@ const TopNav = () => {
           zIndex: 1000,
           width: "100%",
           background: "#fff",
-          padding: "16px 24px",
+          padding: "16px",
           borderBottom: "1px solid #EAEAEA",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
           display: "flex",
@@ -129,14 +148,8 @@ const TopNav = () => {
           <img
             src="/companylogo.png"
             alt="Logo"
-            style={{ height: 50, marginRight: 16 }}
+            style={{ height: 40, marginRight: 8 }}
           />
-          <Title
-            level={3}
-            style={{ marginBottom: 0, color: primaryColor, fontWeight: 600 }}
-          >
-            Chocolate Factory
-          </Title>
         </Link>
 
         {!showMenuIcon && !loading && !error && categories.length > 0 && (
@@ -146,6 +159,8 @@ const TopNav = () => {
               justifyContent: "center",
               alignItems: "center",
               flexGrow: 1,
+              overflowX: "auto",
+              whiteSpace: "nowrap",
             }}
           >
             {categories.map((category) => (
@@ -153,8 +168,8 @@ const TopNav = () => {
                 key={category.id}
                 to={`/category/${category.id}`}
                 style={{
-                  padding: "10px 18px",
-                  margin: "0 10px",
+                  padding: "8px 12px",
+                  margin: "0 5px",
                   borderRadius: "20px",
                   color: primaryColor,
                   fontWeight:
@@ -165,7 +180,7 @@ const TopNav = () => {
                       ? secondaryColor
                       : "transparent",
                   transition: "background-color 0.3s ease, transform 0.2s ease",
-                  fontSize: "15px",
+                  fontSize: "14px",
                 }}
               >
                 {category.name}
@@ -178,20 +193,17 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Space size="middle">
-          
-          
-          <Badge count={safeCartItems.length} showZero>
-            
+          <Badge count={safeCartItems.length} showZero style={badgeStyle} offset={[10, -10]}>
             <ShoppingCartOutlined
-              style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
+              style={{ fontSize: 20, cursor: "pointer", color: primaryColor }}
               onClick={() => {
                 setDrawerContent("cart");
                 setDrawerVisible(true);
               }}
             />
-          </Badge>
+          </Badge>{" "}
           <Avatar
-            size="large"
+            size="small"
             icon={<UserOutlined />}
             style={{ cursor: "pointer", backgroundColor: primaryColor }}
             onClick={handleProfileClick}
@@ -200,7 +212,7 @@ const TopNav = () => {
             <Button
               type="text"
               icon={
-                <MenuOutlined style={{ fontSize: 24, color: primaryColor }} />
+                <MenuOutlined style={{ fontSize: 20, color: primaryColor }} />
               }
               onClick={() => {
                 setDrawerContent("menu");
@@ -224,8 +236,8 @@ const TopNav = () => {
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        width={320}
-        bodyStyle={{ padding: "24px" }}
+        width={280}
+        bodyStyle={{ padding: "16px" }}
         headerStyle={{
           backgroundColor: secondaryColor,
           borderBottom: "1px solid #EAEAEA",
