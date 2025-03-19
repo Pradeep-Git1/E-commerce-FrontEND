@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { List, Typography, Button, Modal } from "antd";
+import { List, Typography, Button, Modal, InputNumber } from "antd";
 import { useSelector, useDispatch } from 'react-redux';
-import { removeFromCart } from "../../app/features/cart/cartSlice";
+import { removeFromCart, addToCart } from "../../app/features/cart/cartSlice";
 import { DeleteOutlined } from "@ant-design/icons";
 import CheckoutModal from "./CheckoutModal";
 
@@ -14,13 +14,18 @@ const CartMenu = ({ setDrawerContent, setDrawerVisible }) => {
     const dispatch = useDispatch();
     const [checkoutModalVisible, setCheckoutModalVisible] = useState(false);
 
-    // Safety check to ensure anonymousCart is always an array
     const safeAnonymousCart = Array.isArray(anonymousCart) ? anonymousCart : [];
 
     const combinedCart = user ? [...cart, ...safeAnonymousCart] : safeAnonymousCart;
     console.log(combinedCart);
+
     const handleRemoveFromCart = (itemId) => {
         dispatch(removeFromCart(itemId));
+    };
+
+    const handleQuantityChange = (value, item) => {
+        const product = safeAnonymousCart.find(cartItem => cartItem.id === item.id) || item;
+        dispatch(addToCart({ product: product, quantity: value }));
     };
 
     const handleCheckout = () => {
@@ -49,8 +54,20 @@ const CartMenu = ({ setDrawerContent, setDrawerVisible }) => {
         return imageSrc || '/default-product-image.jpg';
     };
 
+    const formatPrice = (price) => {
+        if (typeof price === 'number') {
+            return price.toFixed(2);
+        } else if (typeof price === 'string' && !isNaN(Number(price))) {
+            // Check if the price is a string that can be converted to a number
+            return Number(price).toFixed(2);
+        }
+        return '0.00'; // Default to 0.00 if price is not a number or valid number string
+    };
     const calculateTotal = () => {
-        return combinedCart.reduce((sum, item) => (item.price || item.subtotal / item.quantity) * item.quantity, 0);
+        return combinedCart.reduce((sum, item) => {
+            const price = item.price || item.subtotal / item.quantity;
+            return sum + (parseFloat(formatPrice(price)) * item.quantity);
+        }, 0).toFixed(2); // Format total to two decimal places
     };
 
     return (
@@ -60,9 +77,17 @@ const CartMenu = ({ setDrawerContent, setDrawerVisible }) => {
                 renderItem={(item, index) => (
                     <List.Item className="d-flex align-items-center">
                         <img src={getImageSrc(item.image)} alt={item.name} style={{ width: 50, height: 50, objectFit: "cover", borderRadius: "5px" }} />
-                        <div className="ms-3">
+                        <div className="ms-3 flex-grow-1">
                             <Title level={5} className="mb-0">{item.name}</Title>
-                            <Paragraph className="mb-0 text-muted">₹{item.price || item.subtotal / item.quantity} x {item.quantity}</Paragraph>
+                            <div className="d-flex align-items-center justify-content-between">
+                                <Paragraph className="mb-0 text-muted">₹{formatPrice(item.price || item.subtotal / item.quantity)}</Paragraph>
+                                <InputNumber
+                                    min={1}
+                                    value={item.quantity}
+                                    onChange={(value) => handleQuantityChange(value, item)}
+                                    style={{ width: 80 }}
+                                />
+                            </div>
                         </div>
                         <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleRemoveFromCart(user ? item.item_id : index)} />
                     </List.Item>
@@ -80,7 +105,7 @@ const CartMenu = ({ setDrawerContent, setDrawerVisible }) => {
                 calculateTotal={calculateTotal}
                 getImageSrc={getImageSrc}
             />
-                    </>
+        </>
     );
 };
 
