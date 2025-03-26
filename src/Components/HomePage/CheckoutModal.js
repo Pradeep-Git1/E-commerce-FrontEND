@@ -1,12 +1,12 @@
 // src/Components/HomePage/CheckoutModal.js
 
 import React, { useState, useEffect } from "react";
-import { Button, Modal, Form, Input, Checkbox, Radio, message, Typography, Select, Collapse, Space } from "antd";
+import { Button, Modal, Form, Input, Checkbox, message, Typography, Select, Collapse, Space } from "antd";
 import { useSelector } from "react-redux";
 import { getRequest, postRequest } from "../../Services/api";
 import OrderSummary from "./OrderSummary";
 import OrderConfirmationModal from "./OrderConfirmationModal";
-import { PlusOutlined, GiftOutlined, HomeOutlined, CreditCardOutlined, MoneyCollectOutlined } from '@ant-design/icons';
+import { GiftOutlined, HomeOutlined, CreditCardOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -27,7 +27,6 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
   const [newAddressForm] = Form.useForm();
   const [userAddresses, setUserAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
-  const [paymentOption, setPaymentOption] = useState("payNow");
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [selectedAddressDetails, setSelectedAddressDetails] = useState(null);
 
@@ -62,7 +61,6 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
     const selected = userAddresses.find((address) => address.id === value);
     setSelectedAddressDetails(selected || null);
   };
-  const handlePaymentOptionChange = (e) => setPaymentOption(e.target.value);
 
   const handleNewAddressSubmit = async () => {
     try {
@@ -80,7 +78,6 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
   const handleProceedToPayments = () => {
     handleCloseCheckoutModal();
     setConfirmationModalVisible(true);
-    
   };
 
   const handleCloseConfirmationModal = () => {
@@ -88,7 +85,6 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
   };
 
   const handleConfirmOrder = () => {
-    message.success(`Order confirmed. Payment option: ${paymentOption}`);
     setConfirmationModalVisible(false);
     handleCloseCheckoutModal();
   };
@@ -144,16 +140,6 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
                 </Form.Item>
               )}
 
-              <Form.Item label={<Text style={{ color: appColors.lightText }}>Payment Option</Text>}>
-                <Radio.Group value={paymentOption} onChange={handlePaymentOptionChange}>
-                  <Radio value="payNow" style={{ display: 'block', marginBottom: '4px' }}>
-                    <Space size="small"><CreditCardOutlined /><Text style={{ color: appColors.text }}>Pay Now</Text></Space>
-                  </Radio>
-                  <Radio value="payOnDelivery" style={{ display: 'block' }}>
-                    <Space size="small"><MoneyCollectOutlined /><Text style={{ color: appColors.text }}>Pay on Delivery</Text></Space>
-                  </Radio>
-                </Radio.Group>
-              </Form.Item>
             </Form>
 
             <Button type="primary" onClick={handleProceedToPayments} block style={{ marginTop: '12px' }}>Confirm Order</Button>
@@ -167,7 +153,11 @@ const CheckoutModal = ({ combinedCart, checkoutModalVisible, handleCloseCheckout
         onConfirm={handleConfirmOrder}
         orderSummary={<OrderSummary combinedCart={combinedCart} calculateTotal={calculateTotal} getImageSrc={getImageSrc} />}
         address={selectedAddressDetails}
-        paymentOption={paymentOption}
+        paymentOption={"Pay Now"}
+        isGift={isGift}
+        giftRecipientName={giftRecipientName}
+        combinedCart={combinedCart}
+        calculateTotal={calculateTotal}
       />
     </>
   );

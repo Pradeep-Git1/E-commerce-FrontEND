@@ -193,13 +193,15 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Space size="middle">
-          <Badge count={safeCartItems.length} showZero style={badgeStyle} offset={[10, -10]}>
+          <Badge count={safeCartItems.length} showZero style={badgeStyle} offset={[10, -10]}
+                        onClick={() => {
+                          setDrawerContent("cart");
+                          setDrawerVisible(true);
+                        }}
+          
+          >
             <ShoppingCartOutlined
               style={{ fontSize: 20, cursor: "pointer", color: primaryColor }}
-              onClick={() => {
-                setDrawerContent("cart");
-                setDrawerVisible(true);
-              }}
             />
           </Badge>{" "}
           <Avatar

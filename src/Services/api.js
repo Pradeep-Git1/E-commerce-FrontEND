@@ -88,7 +88,6 @@ api.interceptors.response.use(
 function redirectToLogin() {
     removeToken();
     localStorage.removeItem('refreshToken');
-    window.location.href = "/login";
 }
 
 // API utility functions
