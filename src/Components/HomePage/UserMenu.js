@@ -1,44 +1,109 @@
-import React from "react";
-import { LogoutOutlined } from "@ant-design/icons";
-import { List, Divider, Typography, message } from "antd";
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../app/features/user/userSlice'; 
+import React, { useState } from "react";
+import { LogoutOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { List, Divider, Typography, Button } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../app/features/user/userSlice";
+import UserOrders from "./UserOrders";
+import UserAddress from "./UserAddress";
 
 const { Text } = Typography;
 
 const UserMenu = () => {
-  const user = useSelector(state => state.user.data);
+  const user = useSelector((state) => state.user.data);
   const dispatch = useDispatch();
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
-  return (
-    <List>
-      {/* Display User Name */}
-      <List.Item>
-        <Text strong>{user ? user.full_name || user.email : "Guest"}</Text>
-      </List.Item>
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+  };
 
-      {/* User Menu Options */}
-      <List.Item>Addresses</List.Item>
-      <List.Item>Orders</List.Item>
-      <List.Item>Wishlist</List.Item>
-      <List.Item>Talk to Us</List.Item>
-      <List.Item>Gift Cards</List.Item>
+  const handleBack = () => {
+    setSelectedItem(null);
+  };
 
-      <Divider />
+  const renderContent = () => {
+    if (selectedItem) {
+      // Render different components based on selectedItem
+      switch (selectedItem) {
+        case "Orders":
+          return (
+            <>
+              <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
+              </Button>
+              <UserOrders />
+            </>
+          );
+        case "Addresses":
+          return (
+            <div>
+              <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
+              </Button>
+              <UserAddress/>
+            </div>
+          );
+        case "Talk to Us":
+          return (
+            <div>
+              <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
+                Back
+              </Button>
+              <h2>Talk to Us Content</h2>
+              <p>Display contact form or support information here.</p>
+            </div>
+          );
+        default:
+          return null;
+      }
+    } else {
+      return (
+        <List>
+          {/* Display User Name */}
+          <List.Item>
+            <Text strong>{user ? user.full_name || user.email : "Guest"}</Text>
+          </List.Item>
 
-      {/* Logout Button */}
-      {user && (
-        <List.Item className="text-danger fw-bold" onClick={handleLogout} style={{ cursor: "pointer" }}>
-          <LogoutOutlined className="me-2" /> Logout
-        </List.Item>
-      )}
-    </List>
-  );
+          {/* User Menu Options */}
+          <List.Item
+            onClick={() => handleItemClick("Orders")}
+            style={{ cursor: "pointer" }}
+          >
+            Orders
+          </List.Item>
+          <List.Item
+            onClick={() => handleItemClick("Addresses")}
+            style={{ cursor: "pointer" }}
+          >
+            Addresses
+          </List.Item>
+          <List.Item
+            onClick={() => handleItemClick("Talk to Us")}
+            style={{ cursor: "pointer" }}
+          >
+            Talk to Us
+          </List.Item>
+
+          <Divider />
+
+          {/* Logout Button */}
+          {user && (
+            <List.Item
+              className="text-danger fw-bold"
+              onClick={handleLogout}
+              style={{ cursor: "pointer" }}
+            >
+              <LogoutOutlined className="me-2" /> Logout
+            </List.Item>
+          )}
+        </List>
+      );
+    }
+  };
+
+  return <div>{renderContent()}</div>;
 };
 
 export default UserMenu;
-

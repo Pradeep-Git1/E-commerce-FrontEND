@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Carousel, Typography, Button, Space, Divider } from "antd";
+import { Modal, Carousel, Typography, Button, Space, Divider, Image } from "antd";
 import { ShoppingCartOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from "../../app/features/cart/cartSlice";
@@ -10,6 +10,7 @@ const BASE_URL = "http://localhost:8000";
 const ProductModal = ({ product, visible, onClose }) => {
     const [quantity, setQuantity] = useState(1);
     const [message, setMessage] = useState(null);
+    const [currentImage, setCurrentImage] = useState(0);
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.data);
 
@@ -36,39 +37,57 @@ const ProductModal = ({ product, visible, onClose }) => {
 
     const formatImageUrl = (img) => img.startsWith("http") ? img : `${BASE_URL}${img}`;
 
+    const handleThumbnailClick = (index) => {
+        setCurrentImage(index);
+    };
+
     return (
         <Modal
             visible={visible}
             onCancel={onClose}
             footer={null}
             centered
-            width={600}
-            bodyStyle={{ padding: 0 }} // Remove padding
+            style={{ padding: 0 }}
         >
             <div style={{ boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)', borderRadius: 8, overflow: 'hidden' }}>
-                <Carousel autoplay>
+                <div>
                     {product.images.length > 0 ? (
-                        product.images.map((img, index) => (
-                            <div key={index}>
-                                <img
-                                    src={formatImageUrl(img)}
-                                    alt={product.name}
-                                    style={{ width: "100%", height: 350, objectFit: "cover", borderRadius: 0 }} // No border radius here
-                                />
-                            </div>
-                        ))
+                        <img
+                            src={formatImageUrl(product.images[currentImage])}
+                            alt={product.name}
+                            style={{ width: "100%", height: 350, objectFit: "cover", borderRadius: 0 }}
+                        />
                     ) : (
-                        <div>
-                            <img
-                                src={`${BASE_URL}/media/default-placeholder.png`}
-                                alt="Placeholder"
-                                style={{ width: "100%", height: 350, objectFit: "cover", borderRadius: 0 }}
-                            />
+                        <img
+                            src={`${BASE_URL}/media/default-placeholder.png`}
+                            alt="Placeholder"
+                            style={{ width: "100%", height: 350, objectFit: "cover", borderRadius: 0 }}
+                        />
+                    )}
+
+                    {product.images.length > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
+                            {product.images.map((img, index) => (
+                                <img
+                                    key={index}
+                                    src={formatImageUrl(img)}
+                                    alt={`Thumbnail ${index}`}
+                                    style={{
+                                        width: 60,
+                                        height: 60,
+                                        objectFit: "cover",
+                                        margin: 5,
+                                        cursor: 'pointer',
+                                        border: currentImage === index ? '2px solid #1890ff' : 'none',
+                                    }}
+                                    onClick={() => handleThumbnailClick(index)}
+                                />
+                            ))}
                         </div>
                     )}
-                </Carousel>
+                </div>
 
-                <div style={{ padding: "20px", textAlign: "center" }}>
+                <div style={{ textAlign: "center" }}>
                     <Title level={3} style={{ marginBottom: 8 }}>
                         {product.name}
                     </Title>
