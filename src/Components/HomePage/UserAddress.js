@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, Button, Modal, Form, Input, message, List, Space } from 'antd';
+import { Card, Typography, Button, Modal, Form, Input, message, List, Space, Spin, Empty } from 'antd';
 import { postRequest, deleteRequest, getRequest } from '../../Services/api';
 import { useSelector } from 'react-redux';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -14,6 +14,7 @@ function UserAddress() {
   const [form] = Form.useForm();
   const user = useSelector((state) => state.user.data);
   const userId = user?.id;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (userId) {
@@ -23,10 +24,14 @@ function UserAddress() {
 
   const fetchUserAddresses = async (userId) => {
     try {
+      setLoading(true);
       const response = await getRequest(`/user-address/`);
       setAddresses(response);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching addresses:', error);
+      setLoading(false);
+      message.error('Failed to fetch addresses.');
     }
   };
 
@@ -77,6 +82,14 @@ function UserAddress() {
     setEditModalVisible(true);
   };
 
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
@@ -94,55 +107,59 @@ function UserAddress() {
       </div>
 
       <AnimatePresence>
-        <List
-          dataSource={addresses}
-          renderItem={(address) => (
-            <motion.div
-              key={address.id}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card
-                size="small"
-                style={{
-                  margin: '6px 0',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
-                  position: 'relative',
-                }}
+        {addresses.length > 0 ? (
+          <List
+            dataSource={addresses}
+            renderItem={(address) => (
+              <motion.div
+                key={address.id}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
               >
-                <div style={{ padding: '10px' }}>
-                  <Text strong style={{ fontSize: '14px', marginBottom: '4px', textAlign: 'center' }}>
-                    {address.address_type}
-                  </Text>
-                  <Typography.Paragraph style={{ marginBottom: '0' }}>
-                    {address.street_address}, {address.city}, {address.state}, {address.postal_code}, {address.country}
-                  </Typography.Paragraph>
-                </div>
-                <Space size="small" style={{ position: 'absolute', top: '8px', right: '8px' }}>
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon={<EditOutlined />}
-                    onClick={() => handleEdit(address)}
-                    size="small"
-                    style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', border: 'none' }}
-                  />
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(address.id)}
-                    size="small"
-                    style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', border: 'none' }}
-                  />
-                </Space>
-              </Card>
-            </motion.div>
-          )}
-        />
+                <Card
+                  size="small"
+                  style={{
+                    margin: '6px 0',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+                    position: 'relative',
+                  }}
+                >
+                  <div style={{ padding: '10px' }}>
+                    <Text strong style={{ fontSize: '14px', marginBottom: '4px', textAlign: 'center' }}>
+                      {address.address_type}
+                    </Text>
+                    <Typography.Paragraph style={{ marginBottom: '0' }}>
+                      {address.street_address}, {address.city}, {address.state}, {address.postal_code}, {address.country}
+                    </Typography.Paragraph>
+                  </div>
+                  <Space size="small" style={{ position: 'absolute', top: '8px', right: '8px' }}>
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(address)}
+                      size="small"
+                      style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', border: 'none' }}
+                    />
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(address.id)}
+                      size="small"
+                      style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', border: 'none' }}
+                    />
+                  </Space>
+                </Card>
+              </motion.div>
+            )}
+          />
+        ) : (
+          <Empty description="No addresses found." />
+        )}
       </AnimatePresence>
 
       <Modal

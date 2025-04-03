@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Typography, Tabs, Form, Spin } from "antd";
+import { Button, Input, Typography, Tabs, Form, Spin, message } from "antd";
 import {
   MailOutlined,
   PhoneOutlined,
@@ -24,14 +24,21 @@ const UserLogin = ({ onLoginSuccess }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
-
-  const handleSendOtp = () => {
-    dispatch(sendOtp(loginIdentifier, () => setIsOtpSent(true)));
+  const handleSendOtp = async () => {
+    try {
+      await dispatch(sendOtp(loginIdentifier)).unwrap();
+      setIsOtpSent(true);
+      message.success("OTP sent successfully!"); // Provide user feedback
+    } catch (error) {
+      message.error("Failed to send OTP. Please try again."); // Handle potential errors
+      // Optionally log the error: console.error("Send OTP error:", error);
+    }
   };
 
   const handleResetPassword = () => {
     dispatch(resetPassword(resetEmail));
   };
+
   const handleLogin = async () => {
     dispatch(login({ identifier: loginIdentifier, password }))
       .unwrap() // Use unwrap to handle promise results
@@ -39,6 +46,7 @@ const UserLogin = ({ onLoginSuccess }) => {
         onLoginSuccess(); // Call onLoginSuccess on successful login
       })
       .catch(() => {
+        message.error("Invalid email/phone or password."); // Provide user feedback for login failure
         // Handle login error if needed
       });
   };
@@ -50,8 +58,10 @@ const UserLogin = ({ onLoginSuccess }) => {
         onLoginSuccess();
       })
       .catch(() => {
+        message.error("Invalid OTP."); // Provide user feedback for OTP login failure
       });
   };
+
   return (
     <div>
       <Title level={3} style={{ textAlign: "center", marginBottom: 24 }}>
@@ -100,11 +110,12 @@ const UserLogin = ({ onLoginSuccess }) => {
                 prefix={loginIdentifier.includes("@") ? <MailOutlined /> : <PhoneOutlined />}
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
+                disabled={isOtpSent} // Disable the input after OTP is sent
               />
             </Form.Item>
             {!isOtpSent ? (
               <Form.Item>
-                <Button type="default" block onClick={handleSendOtp} icon={<SendOutlined />}>
+                <Button type="default" block onClick={handleSendOtp} icon={<SendOutlined />} loading={isLoading && !isOtpSent}>
                   Send OTP
                 </Button>
               </Form.Item>

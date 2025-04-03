@@ -8,13 +8,16 @@ import UserAddress from "./UserAddress";
 
 const { Text } = Typography;
 
-const UserMenu = () => {
+const UserMenu = ({ onLogout }) => { // Receive the onLogout prop
   const user = useSelector((state) => state.user.data);
   const dispatch = useDispatch();
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleLogout = () => {
     dispatch(logout());
+    if (onLogout) {
+      onLogout(); // Call the prop function to update TopNav's state
+    }
   };
 
   const handleItemClick = (item) => {

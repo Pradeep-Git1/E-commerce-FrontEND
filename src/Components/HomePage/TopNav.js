@@ -17,7 +17,7 @@ import {
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUser } from "../../app/features/user/userSlice";
+import { fetchUser, logout  } from "../../app/features/user/userSlice";
 import { fetchCart } from "../../app/features/cart/cartSlice";
 import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
@@ -96,11 +96,7 @@ const TopNav = () => {
   const selectedCategoryName = getCategoryNameFromPath(location.pathname);
 
   const handleProfileClick = () => {
-    if (user) {
-      setDrawerContent("profile");
-    } else {
-      setDrawerContent("login");
-    }
+    setDrawerContent(user ? "profile" : "login");
     setDrawerVisible(true);
   };
 
@@ -111,12 +107,17 @@ const TopNav = () => {
     setDrawerVisible(false);
   };
 
+  const handleLogoutFromMenu = () => {
+    dispatch(logout());
+    // Immediately set the drawer content to login after dispatching logout
+    setDrawerContent("login");
+  };
+
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
 
   const badgeStyle = {
     transition: "transform 0.3s ease",
-    transform: badgeJiggle ? "scale(10)" : "scale(1)",
-        
+    transform: badgeJiggle ? "scale(1.1)" : "scale(1)",
   };
 
   return (
@@ -193,12 +194,15 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Space size="middle">
-          <Badge count={safeCartItems.length} showZero style={badgeStyle} offset={[10, -10]}
-                        onClick={() => {
-                          setDrawerContent("cart");
-                          setDrawerVisible(true);
-                        }}
-          
+          <Badge
+            count={safeCartItems.length}
+            showZero
+            style={badgeStyle}
+            offset={[10, -10]}
+            onClick={() => {
+              setDrawerContent("cart");
+              setDrawerVisible(true);
+            }}
           >
             <ShoppingCartOutlined
               style={{ fontSize: 20, cursor: "pointer", color: primaryColor }}
@@ -245,7 +249,10 @@ const TopNav = () => {
           borderBottom: "1px solid #EAEAEA",
         }}
       >
-        {drawerContent === "profile" && <UserMenu user={user} />}
+        {drawerContent === "profile" && <UserMenu onLogout={handleLogoutFromMenu} />}
+        {drawerContent === "login" && (
+          <UserLogin onLoginSuccess={handleLoginSuccess} />
+        )}
         {drawerContent === "cart" && <CartMenu />}
         {drawerContent === "menu" && (
           <Menu mode="vertical" selectable={false}>
@@ -264,9 +271,6 @@ const TopNav = () => {
               </Menu.Item>
             ))}
           </Menu>
-        )}
-        {drawerContent === "login" && (
-          <UserLogin onLoginSuccess={handleLoginSuccess} />
         )}
       </Drawer>
     </>
