@@ -28,10 +28,9 @@ const UserLogin = ({ onLoginSuccess }) => {
     try {
       await dispatch(sendOtp(loginIdentifier)).unwrap();
       setIsOtpSent(true);
-      message.success("OTP sent successfully!"); // Provide user feedback
+      message.success("OTP sent successfully!"); 
     } catch (error) {
       message.error("Failed to send OTP. Please try again."); // Handle potential errors
-      // Optionally log the error: console.error("Send OTP error:", error);
     }
   };
 
@@ -40,7 +39,8 @@ const UserLogin = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    dispatch(login({ identifier: loginIdentifier, password }))
+    dispatch(login({ identifier: loginIdentifier, otp }))
+
       .unwrap() // Use unwrap to handle promise results
       .then(() => {
         onLoginSuccess(); // Call onLoginSuccess on successful login

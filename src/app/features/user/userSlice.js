@@ -24,12 +24,16 @@ export const fetchUser = createAsyncThunk(
 
 export const login = createAsyncThunk(
   'user/login',
-  async ({ identifier, password, otp = false }, { dispatch, rejectWithValue }) => {
+  async ({ identifier, password, otp = null }, { dispatch, rejectWithValue }) => {
     try {
-      const response = await postRequest(otp ? '/verify-otp/' : '/login/', {
-        identifier,
-        password,
-      });
+      const isOtpLogin = otp !== null;
+
+      const response = await postRequest(isOtpLogin ? '/verify-otp/' : '/login/', 
+        isOtpLogin
+          ? { identifier, otp } 
+          : { identifier, password } 
+      );
+
       setToken(response.token);
       localStorage.setItem('refreshToken', response.refresh_token);
       message.success('Welcome back!');

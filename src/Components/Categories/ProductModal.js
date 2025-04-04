@@ -60,14 +60,15 @@ const ProductModal = ({ product, visible, onClose }) => {
     >
       {/* Scoped CSS injected inside the component */}
       <style>
-        {`
+  {`
     .product-modal .ant-modal-content {
       padding: 0 !important;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
       border-radius: 12px !important;
+      border: 2px solid blue !important; /* ✅ Explicitly define border */
     }
   `}
-      </style>
+</style>
 
       {/* ...your existing modal content here... */}
       <div style={{ borderRadius: 8, overflow: "hidden" }}>
@@ -130,10 +131,49 @@ const ProductModal = ({ product, visible, onClose }) => {
             {product.name}
           </Title>
 
-          <Space align="center" style={{ marginBottom: 12 }}>
-            <Text strong style={{ fontSize: 24, color: "#8B4513" }}>
-              ₹{product.price}
-            </Text>
+          <Space
+            align="center"
+            style={{
+              marginBottom: 12,
+              transition: "transform 0.3s ease",
+              transform: quantity > 1 ? "scale(1.05)" : "scale(1)",
+            }}
+          >
+            {product.discount_price < product.price ? (
+              <>
+                <Text
+                  delete
+                  style={{
+                    fontSize: 18,
+                    color: "#999",
+                    marginRight: 8,
+                  }}
+                >
+                  ₹{product.price}
+                </Text>
+                <Text
+                  strong
+                  style={{
+                    fontSize: 24,
+                    color: "#C27A45",
+                    transition: "color 0.3s ease, transform 0.3s ease",
+                  }}
+                >
+                  ₹{product.discount_price}
+                </Text>
+              </>
+            ) : (
+              <Text
+                strong
+                style={{
+                  fontSize: 24,
+                  color: "#8B4513",
+                  transition: "color 0.3s ease, transform 0.3s ease",
+                }}
+              >
+                ₹{product.price}
+              </Text>
+            )}
           </Space>
 
           <Divider style={{ margin: "12px 0" }} />
@@ -179,11 +219,12 @@ const ProductModal = ({ product, visible, onClose }) => {
               />
             </Space>
             <Button
-              type="primary"
+              type="none"
               icon={<ShoppingCartOutlined />}
               size="large"
               onClick={handleAddToCart}
-              style={{ margin: 15 }}
+              style={{ margin: 15, backgroundColor: "brown", color: " " }}
+              
             >
               Add to Cart
             </Button>
