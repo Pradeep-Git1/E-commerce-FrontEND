@@ -1,59 +1,75 @@
-import React, { useState, useEffect } from "react";
-import { Carousel, Card, Typography, Button, Spin, Alert } from "antd";
-import CartItemModal from "../FunctionalComps/CartItemModal";
-import { getRequest } from "../../Services/api"; 
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Typography, Spin, Alert, Row, Col } from "antd";
+import { getRequest } from "../../Services/api";
+import ProductCard from "../Categories/ProductCard";
+import ProductModal from "../Categories/ProductModal";
 
 const { Title, Paragraph } = Typography;
+
+const BASE_URL = "http://localhost:8000";
 
 const TopProducts = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-
-  const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const BASE_URL = "http://localhost:8000"; // Ensure images load properly
+  const productRefs = useRef([]);
 
-  // Fetch Products from API
+  const fetchProducts = async () => {
+    try {
+      const response = await getRequest("/top-products/");
+      const updatedProducts = response.map(product => ({
+        ...product,
+        images: product.images.map(image =>
+          image.startsWith("/") ? `${BASE_URL}${image}` : `${BASE_URL}/${image}`
+        )
+      }));
+      setProducts(updatedProducts);
+    } catch (err) {
+      setError("Failed to load products. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getRequest("/top-products/");
-        // Ensure image URLs always start with '/'
-        const updatedProducts = response.map(product => ({
-          ...product,
-          images: product.images.map(image => 
-            image.startsWith("/") ? `${BASE_URL}${image}` : `${BASE_URL}/${image}`
-          )
-        }));
-        setProducts(updatedProducts);
-      } catch (err) {
-        setError("Failed to load products. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
-  // Open Modal
-  const handleOpenModal = (product) => {
+  const handleProductVisibility = useCallback((index, node) => {
+    if (!node) return;
+    node.style.transform = "scale(0.9)";
+    node.style.opacity = 0;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          node.style.transition = "transform 0.4s ease, opacity 0.4s ease";
+          node.style.transform = "scale(1)";
+          node.style.opacity = 1;
+          observer.disconnect();
+        }
+      });
+    });
+
+    observer.observe(node);
+  }, []);
+
+  useEffect(() => {
+    productRefs.current.forEach((ref, index) => {
+      handleProductVisibility(index, ref);
+    });
+  }, [products, handleProductVisibility]);
+
+  const openModal = (product) => {
     setSelectedProduct(product);
     setModalVisible(true);
   };
 
-  // Close Modal
-  const handleCloseModal = () => {
+  const closeModal = () => {
     setModalVisible(false);
-  };
-
-  // Add to Cart
-  const handleAddToCart = (product, quantity) => {
-    setCart([...cart, { ...product, quantity }]);
-    setModalVisible(false);
-    console.log("Cart Updated:", [...cart, { ...product, quantity }]);
+    setSelectedProduct(null);
   };
 
   return (
@@ -70,68 +86,37 @@ const TopProducts = () => {
         <Alert message={error} type="error" showIcon />
       ) : (
         <div className="scroll-container">
-          <div className="d-flex product-scroll">
+          <Row gutter={[16, 16]} className="product-scroll flex-nowrap" wrap={false}>
             {products.length > 0 ? (
-              products.map((product) => (
-                <Card
+              products.map((product, index) => (
+                <Col
                   key={product.id}
-                  hoverable
-                  className="rounded-3 shadow-sm p-0 border-0 product-card"
+                  xs={16}
+                  sm={12}
+                  md={8}
+                  lg={6}
+                  xl={4}
+                  ref={(node) => (productRefs.current[index] = node)}
+                  style={{ flex: "0 0 auto" }}
                 >
-                  {/* Image Carousel */}
-                  <Carousel autoplay effect="fade" className="rounded-3">
-                    {product.images.map((image, index) => (
-                      <div key={index}>
-                        <img
-                          src={image}
-                          alt={product.name}
-                          className="w-100 rounded-3"
-                          style={{ height: "180px", objectFit: "cover" }}
-                        />
-                      </div>
-                    ))}
-                  </Carousel>
-
-                  {/* Product Info */}
-                  <div className="text-center mt-2 p-2">
-                    <Title level={5} className="mb-1">{product.name}</Title>
-                    <Paragraph className="mb-1 text-muted small">
-                      <strong>Price:</strong> ₹{product.price}
-                    </Paragraph>
-                    <Paragraph className="mb-1 text-muted small">
-                      <strong>Quantity:</strong> {product.quantity} pcs
-                    </Paragraph>
-                    <Button 
-                      type="primary" 
-                      size="small" 
-                      className="mt-2 product-btn"
-                      onClick={() => handleOpenModal(product)}
-                    >
-                      Add to Cart 🛒
-                    </Button>
-                  </div>
-                </Card>
+                  <ProductCard product={product} onModalOpen={openModal} />
+                </Col>
               ))
             ) : (
-              <Paragraph className="text-center text-muted">
-                No products available.
-              </Paragraph>
+              <Paragraph className="text-center text-muted">No products available.</Paragraph>
             )}
-          </div>
+          </Row>
         </div>
       )}
 
-      {/* Cart Modal */}
       {selectedProduct && (
-        <CartItemModal
-          visible={modalVisible}
+        <ProductModal
           product={selectedProduct}
-          onClose={handleCloseModal}
-          onAddToCart={handleAddToCart}
+          visible={modalVisible}
+          onClose={closeModal}
         />
       )}
 
-      {/* Custom Styles */}
       <style>
         {`
           .text-highlight {
@@ -142,20 +127,10 @@ const TopProducts = () => {
           .scroll-container {
             width: 100%;
             overflow-x: auto;
-            white-space: nowrap;
             padding: 10px;
           }
           .product-scroll {
             display: flex;
-            gap: 16px;
-          }
-          .product-card {
-            width: 260px;
-            min-height: 380px;
-            transition: transform 0.3s ease-in-out;
-          }
-          .product-card:hover {
-            transform: scale(1.05);
           }
         `}
       </style>

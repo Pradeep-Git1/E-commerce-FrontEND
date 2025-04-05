@@ -5,17 +5,17 @@ const { Title, Paragraph } = Typography;
 
 const carouselItems = [
   {
-    gradient: "linear-gradient(135deg, #8e44ad, #c0392b)", // Purple to Red
+    gradient: "linear-gradient(135deg, #8e44ad, #c0392b)",
     title: "Indulge in Luxury",
     description: "Experience the finest handcrafted chocolates made with love.",
   },
   {
-    gradient: "linear-gradient(135deg, #2c3e50, #3498db)", // Dark Blue to Light Blue
+    gradient: "linear-gradient(135deg, #2c3e50, #3498db)",
     title: "Dark & Decadent",
     description: "Rich dark chocolate for an intense, unforgettable taste.",
   },
   {
-    gradient: "linear-gradient(135deg, #f39c12, #e74c3c)", // Orange to Red
+    gradient: "linear-gradient(135deg, #f39c12, #e74c3c)",
     title: "Perfect Gift Choice",
     description: "Delight your loved ones with our premium gift boxes.",
   },
@@ -23,57 +23,79 @@ const carouselItems = [
 
 const HeroCarousel = () => {
   return (
-    <div className="container mt-4 mb-5" >
-      <Carousel autoplay effect="fade">
+    <div style={{ width: "100%", marginBottom: "40px" }}>
+      <Carousel autoplay effect="fade" dots>
         {carouselItems.map((item, index) => (
-          <div key={index} style={{ position: "relative", height: "85vh", borderRadius: "25px", overflow: "hidden" }}>
-            {/* Gradient Background Overlay */}
+          <div key={index}>
             <div
               style={{
-                position: "absolute",
-                inset: 0,
-                background: item.gradient, // Ensures gradient is applied correctly
-                zIndex: -1, // Places it behind content
-                borderRadius: "25px",
-              }}
-            />
-            {/* Centered Content */}
-            <Row
-              justify="center"
-              align="middle"
-              style={{
-                height: "100%",
-                backdropFilter: "blur(10px)", // Glassmorphism effect
-                background: "rgba(255, 255, 255, 0.1)", // Subtle transparency
-                borderRadius: "25px",
-                padding: "20px",
-                boxShadow: "0px 10px 30px rgba(0,0,0,0.2)", // Soft shadow effect
+                height: "60vh",
+                minHeight: "400px",
+                width: "100%",
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: item.gradient,
               }}
             >
-              <Col xs={22} sm={20} md={16} lg={12} xl={10} style={{ textAlign: "center", color: "#fff" }}>
-                <Title level={2} style={{ fontWeight: "bold", textShadow: "3px 3px 8px rgba(0,0,0,0.4)" }}>
-                  {item.title}
-                </Title>
-                <Paragraph style={{ fontSize: "18px", textShadow: "2px 2px 5px rgba(0,0,0,0.3)" }}>
-                  {item.description}
-                </Paragraph>
-                <Button
-                  type="primary"
-                  size="large"
-                  style={{
-                    marginTop: "15px",
-                    background: "#D4A373",
-                    borderColor: "#D4A373",
-                    borderRadius: "30px",
-                    padding: "10px 30px",
-                    fontSize: "18px",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-                  }}
-                >
-                  Explore Now
-                </Button>
-              </Col>
-            </Row>
+              {/* Content Container */}
+              <div
+                style={{
+                  backdropFilter: "blur(8px)",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  padding: "20px",
+                  borderRadius: "20px",
+                  maxWidth: "90%",
+                  width: "100%",
+                  textAlign: "center",
+                }}
+              >
+                <Row justify="center" align="middle">
+                  <Col xs={24} sm={20} md={18} lg={14}>
+                    <Title
+                      level={2}
+                      style={{
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: "clamp(24px, 5vw, 36px)",
+                        textShadow: "1px 1px 4px rgba(0,0,0,0.5)",
+                        marginBottom: 16,
+                      }}
+                    >
+                      {item.title}
+                    </Title>
+                    <Paragraph
+                      style={{
+                        color: "#f0f0f0",
+                        fontSize: "clamp(14px, 4vw, 18px)",
+                        margin: "0 auto 24px",
+                        maxWidth: 500,
+                        lineHeight: 1.6,
+                        textShadow: "1px 1px 3px rgba(0,0,0,0.3)",
+                      }}
+                    >
+                      {item.description}
+                    </Paragraph>
+                    <Button
+                      type="primary"
+                      size="large"
+                      style={{
+                        backgroundColor: "#D4A373",
+                        borderColor: "#D4A373",
+                        borderRadius: "30px",
+                        padding: "10px 28px",
+                        fontSize: "clamp(14px, 4vw, 16px)",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      Explore Now
+                    </Button>
+                  </Col>
+                </Row>
+              </div>
+            </div>
           </div>
         ))}
       </Carousel>

@@ -1,16 +1,18 @@
 import React from 'react'
 import HeroCarousel from '../MainContent/HeroCarousel'
 import TopProducts from '../MainContent/TopProducts'
-import LuxuryChocolates from '../MainContent/LuxuryChocolates'
 import GiftChocolates from '../MainContent/GiftChocolates'
 import PremiumCustomisable from '../MainContent/PremiumCustomisable'
+import Gallery from './Gallery'
+import CompanyReels from './Reels'
 
 function MainContent() {
   return (
     <div>
         <HeroCarousel/>
         <TopProducts/>
-        <LuxuryChocolates/>
+        <Gallery/>
+        <CompanyReels/>
         <GiftChocolates/>
         <PremiumCustomisable/>
     </div>
