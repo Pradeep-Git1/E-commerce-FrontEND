@@ -17,7 +17,7 @@ import {
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUser, logout  } from "../../app/features/user/userSlice";
+import { fetchUser, logout } from "../../app/features/user/userSlice";
 import { fetchCart } from "../../app/features/cart/cartSlice";
 import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
@@ -30,9 +30,11 @@ const secondaryColor = "#D2B48C";
 
 const TopNav = () => {
   const user = useSelector((state) => state.user.data);
+  const company = useSelector((state) => state.company.data);
   const cartItems = useSelector((state) =>
     user ? state.cart.items : state.cart.anonymousItems
   );
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerContent, setDrawerContent] = useState("menu");
   const [categories, setCategories] = useState([]);
@@ -109,7 +111,6 @@ const TopNav = () => {
 
   const handleLogoutFromMenu = () => {
     dispatch(logout());
-    // Immediately set the drawer content to login after dispatching logout
     setDrawerContent("login");
   };
 
@@ -138,6 +139,7 @@ const TopNav = () => {
           justifyContent: "space-between",
         }}
       >
+        {/* Brand / Logo */}
         <Link
           to="/"
           style={{
@@ -147,12 +149,16 @@ const TopNav = () => {
           }}
         >
           <img
-            src="/companylogo.png"
-            alt="Logo"
+            src={company?.company_logo || "/companylogo.png"}
+            alt={company?.company_name || "Company Logo"}
             style={{ height: 40, marginRight: 8 }}
           />
+          <Title level={5} style={{ margin: 0, color: primaryColor }}>
+            {company?.company_name || "Chocolate Factory"}
+          </Title>
         </Link>
 
+        {/* Category links */}
         {!showMenuIcon && !loading && !error && categories.length > 0 && (
           <div
             style={{
@@ -193,6 +199,7 @@ const TopNav = () => {
         {loading && <Spin />}
         {error && <Alert message={error} type="error" showIcon />}
 
+        {/* Right side: Cart, Profile, Menu */}
         <Space size="middle">
           <Badge
             count={safeCartItems.length}
@@ -207,13 +214,15 @@ const TopNav = () => {
             <ShoppingCartOutlined
               style={{ fontSize: 20, cursor: "pointer", color: primaryColor }}
             />
-          </Badge>{" "}
+          </Badge>
+
           <Avatar
             size="small"
             icon={<UserOutlined />}
             style={{ cursor: "pointer", backgroundColor: primaryColor }}
             onClick={handleProfileClick}
           />
+
           {showMenuIcon && (
             <Button
               type="text"
@@ -229,6 +238,7 @@ const TopNav = () => {
         </Space>
       </div>
 
+      {/* Drawer */}
       <Drawer
         title={
           drawerContent === "profile"

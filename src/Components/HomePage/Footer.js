@@ -1,6 +1,17 @@
 import React, { useState } from "react";
-import { Layout, Row, Col, Typography, Modal } from "antd";
-import { MailOutlined, PhoneOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import { Layout, Row, Col, Typography, Modal, Divider, Tooltip } from "antd";
+import {
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  FacebookFilled,
+  InstagramFilled,
+  LinkedinFilled,
+  TwitterSquareFilled,
+  YoutubeFilled,
+} from "@ant-design/icons";
+
 import RefundPolicy from "../FooterLinks/RefundPolicy";
 import PrivacyPolicy from "../FooterLinks/PrivacyPolicy";
 import TermsConditions from "../FooterLinks/TermsConditions";
@@ -8,66 +19,162 @@ import FAQs from "../FooterLinks/FAQs";
 import ShippingDelivery from "../FooterLinks/ShippingDelivery";
 
 const { Footer } = Layout;
-const { Title, Paragraph, Link } = Typography;
+const { Title, Paragraph, Link, Text } = Typography;
 
 const FooterComponent = () => {
   const [modalContent, setModalContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const company = useSelector((state) => state.company.data);
 
   const openModal = (component) => {
     setModalContent(component);
     setIsModalOpen(true);
   };
 
+  const isValidGoogleMapsUrl = (url) =>
+    typeof url === "string" && url.includes("https://www.google.com/maps/embed");
+
+  const socialIcons = [
+    { icon: <FacebookFilled />, url: company?.facebook_url, label: "Facebook" },
+    { icon: <InstagramFilled />, url: company?.instagram_url, label: "Instagram" },
+    { icon: <LinkedinFilled />, url: company?.linkedin_url, label: "LinkedIn" },
+    { icon: <TwitterSquareFilled />, url: company?.twitter_url, label: "Twitter" },
+    { icon: <YoutubeFilled />, url: company?.youtube_url, label: "YouTube" },
+  ];
+
   return (
     <>
-      <Footer className="bg-dark text-white pt-5 pb-3">
-        <div className="container">
-          <Row gutter={[24, 24]} justify="center">
+      <Footer
+        style={{
+          backgroundColor: "#1a1a1a",
+          color: "#fff",
+          padding: "60px 0 30px",
+          fontFamily: "'Segoe UI', sans-serif",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "0 24px",
+          }}
+        >
+          <Row gutter={[32, 32]} justify="center">
             {/* Column 1: Company Info */}
-            <Col xs={24} sm={12} md={6}>
-              <Title level={4} className="text-white">🍫 Chocolate Factory</Title>
-              <Paragraph className="text-white-50">
-                <EnvironmentOutlined /> 123 Chocolate Street, Cocoa City, India
-              </Paragraph>
-              <Paragraph className="text-white-50">
-                <PhoneOutlined /> +91 98765 43210
-              </Paragraph>
-              <Paragraph className="text-white-50">
-                <MailOutlined /> support@chocoweb.com
-              </Paragraph>
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+                {company?.favicon_logo && (
+                  <img
+                    src={company.favicon_logo}
+                    alt="favicon"
+                    style={{ height: 32, width: 32, marginRight: 8, borderRadius: "6px" }}
+                  />
+                )}
+                <Title level={4} style={{ color: "#fff", margin: 0 }}>
+                  {company?.company_name || "Chocolate Factory"}
+                </Title>
+              </div>
+
+              {company?.public_address && (
+                <Paragraph style={infoText}>
+                  <EnvironmentOutlined />{" "}
+                  <span style={{ marginLeft: 6 }}>{company.public_address}</span>
+                </Paragraph>
+              )}
+              {company?.public_contact_number && (
+                <Paragraph style={infoText}>
+                  <PhoneOutlined />{" "}
+                  <span style={{ marginLeft: 6 }}>{company.public_contact_number}</span>
+                </Paragraph>
+              )}
+              {company?.public_email && (
+                <Paragraph style={infoText}>
+                  <MailOutlined />{" "}
+                  <span style={{ marginLeft: 6 }}>{company.public_email}</span>
+                </Paragraph>
+              )}
+
+              {/* Social Icons */}
+              <div style={{ marginTop: 16 }}>
+                {socialIcons.map(
+                  (item, idx) =>
+                    item.url && (
+                      <Tooltip title={item.label} key={idx}>
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: "#ccc",
+                            fontSize: 20,
+                            marginRight: 12,
+                            transition: "color 0.3s",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "#ccc")}
+                        >
+                          {item.icon}
+                        </a>
+                      </Tooltip>
+                    )
+                )}
+              </div>
             </Col>
 
             {/* Column 2: Quick Links */}
-            <Col xs={24} sm={12} md={6}>
-              <Title level={4} className="text-white">Quick Links</Title>
-              <ul className="list-unstyled">
-                <li><Link onClick={() => openModal(<RefundPolicy />)} className="text-white-50">Refund Policy</Link></li>
-                <li><Link onClick={() => openModal(<PrivacyPolicy />)} className="text-white-50">Privacy Policy</Link></li>
-                <li><Link onClick={() => openModal(<TermsConditions />)} className="text-white-50">Terms & Conditions</Link></li>
-                <li><Link onClick={() => openModal(<FAQs />)} className="text-white-50">FAQs</Link></li>
-                <li><Link onClick={() => openModal(<ShippingDelivery />)} className="text-white-50">Shipping & Delivery</Link></li>
-              </ul>
+            <Col xs={24} sm={12} md={8}>
+              <Title level={4} style={{ color: "#fff", marginBottom: 16 }}>
+                Quick Links
+              </Title>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <Link onClick={() => openModal(<RefundPolicy />)} style={linkStyle}>
+                  Refund Policy
+                </Link>
+                <Link onClick={() => openModal(<PrivacyPolicy />)} style={linkStyle}>
+                  Privacy Policy
+                </Link>
+                <Link onClick={() => openModal(<TermsConditions />)} style={linkStyle}>
+                  Terms & Conditions
+                </Link>
+                <Link onClick={() => openModal(<FAQs />)} style={linkStyle}>
+                  FAQs
+                </Link>
+                <Link onClick={() => openModal(<ShippingDelivery />)} style={linkStyle}>
+                  Shipping & Delivery
+                </Link>
+              </div>
             </Col>
 
             {/* Column 3: Google Map */}
-            <Col xs={24} sm={12} md={6}>
-              <Title level={4} className="text-white">Find Us</Title>
-              <iframe
-                title="Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.825336179889!2d-122.41941548468133!3d37.77492997975821!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085809c5f6b4b29%3A0x77f992c39c0f9896!2sSan+Francisco%2C+CA!5e0!3m2!1sen!2sus!4v1615551047123!5m2!1sen!2sus"
-                width="100%"
-                height="150"
-                style={{ border: 0, borderRadius: "8px" }}
-                allowFullScreen=""
-                loading="lazy"
-              ></iframe>
+            <Col xs={24} sm={24} md={8}>
+              <Title level={4} style={{ color: "#fff", marginBottom: 16 }}>
+                Find Us
+              </Title>
+
+              {isValidGoogleMapsUrl(company?.google_maps_url) ? (
+                <iframe
+                  title="Google Map"
+                  src={company.google_maps_url}
+                  width="100%"
+                  height="180"
+                  style={{ border: 0, borderRadius: "12px" }}
+                  allowFullScreen=""
+                  loading="lazy"
+                ></iframe>
+              ) : (
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  Map location not available.
+                </Text>
+              )}
             </Col>
           </Row>
 
-          {/* Footer Bottom Section */}
-          <div className="text-center mt-4 text-white-50">
-            © {new Date().getFullYear()} Chocolate Factory. All Rights Reserved.
+          <Divider style={{ backgroundColor: "#333", margin: "40px 0" }} />
+
+          {/* Footer Bottom */}
+          <div style={{ textAlign: "center", color: "#777", fontSize: 13 }}>
+            © {new Date().getFullYear()} {company?.company_name || "Chocolate Factory"}. All rights reserved.
           </div>
         </div>
       </Footer>
@@ -78,11 +185,27 @@ const FooterComponent = () => {
         footer={null}
         onCancel={() => setIsModalOpen(false)}
         centered
+        bodyStyle={{ padding: 24 }}
       >
         {modalContent}
       </Modal>
     </>
   );
+};
+
+// 🔧 Reusable styles
+const linkStyle = {
+  color: "#bbbbbb",
+  fontSize: 14,
+  cursor: "pointer",
+  textDecoration: "none",
+  transition: "color 0.3s",
+};
+
+const infoText = {
+  color: "#bbbbbb",
+  fontSize: 14,
+  marginBottom: 6,
 };
 
 export default FooterComponent;

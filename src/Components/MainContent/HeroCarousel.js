@@ -1,105 +1,82 @@
-import React from "react";
-import { Carousel, Typography, Button, Row, Col } from "antd";
+import React from 'react';
+import { Carousel, Button } from 'antd';
+import { motion } from 'framer-motion';
 
-const { Title, Paragraph } = Typography;
-
-const carouselItems = [
+const slides = [
   {
-    gradient: "linear-gradient(135deg, #8e44ad, #c0392b)",
-    title: "Indulge in Luxury",
-    description: "Experience the finest handcrafted chocolates made with love.",
+    title: "Delicious Homemade Chocolates",
+    description: "Crafted with love, no preservatives – just pure indulgence.",
+    image: "/images/chocolates.jpg",
+    gradient: "linear-gradient(to right, #3a1c71cc, #d76d77cc, #ffaf7bcc)", // Purple-pink
   },
   {
-    gradient: "linear-gradient(135deg, #2c3e50, #3498db)",
-    title: "Dark & Decadent",
-    description: "Rich dark chocolate for an intense, unforgettable taste.",
+    title: "Soothing Herbal Teas",
+    description: "Freshly blended, naturally calming – a cup of health and joy.",
+    image: "/images/tea.jpg",
+    gradient: "linear-gradient(to right, #0f2027cc, #203a43cc, #2c5364cc)", // Herbal deep greens
   },
   {
-    gradient: "linear-gradient(135deg, #f39c12, #e74c3c)",
-    title: "Perfect Gift Choice",
-    description: "Delight your loved ones with our premium gift boxes.",
+    title: "Aromatic Essential Oils",
+    description: "Cold-pressed, pure extracts to elevate your wellness rituals.",
+    image: "/images/oils.jpg",
+    gradient: "linear-gradient(to right, #355c7dcc, #6c5b7bcc, #c06c84cc)", // Lavender-green blend
+  },
+  {
+    title: "Exotic Indian Spices",
+    description: "Handpicked spices for an authentic culinary journey.",
+    image: "/images/spices.jpg",
+    gradient: "linear-gradient(to right, #8e0e00cc, #1f1c18cc)", // Spicy red-black
+  },
+  {
+    title: "Perfect Gifting Combos",
+    description: "Elegant, edible gifts that spark joy & taste divine.",
+    image: "/images/combos.jpg",
+    gradient: "linear-gradient(to right, #8360c3cc, #2ebf91cc)", // Teal-purple
+  },
+  {
+    title: "Limited Edition Seasonal Packs",
+    description: "Celebrate flavors with our handcrafted seasonal delights.",
+    image: "/images/seasonal.jpg",
+    gradient: "linear-gradient(to right, #fc5c7dcc, #6a82fbcc)", // Warm pink-blue
   },
 ];
 
+const contentStyle = {
+  height: '50vh',
+  color: '#fff',
+  textAlign: 'left',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingLeft: '10%',
+  paddingRight: '10%',
+};
+
 const HeroCarousel = () => {
   return (
-    <div style={{ width: "100%", marginBottom: "40px" }}>
-      <Carousel autoplay effect="fade" dots>
-        {carouselItems.map((item, index) => (
-          <div key={index}>
-            <div
-              style={{
-                height: "60vh",
-                minHeight: "400px",
-                width: "100%",
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: item.gradient,
-              }}
+    <Carousel autoplay speed={1000} autoplaySpeed={6000} effect="fade">
+      {slides.map((slide, index) => (
+        <div key={index}>
+          <div
+            style={{
+              ...contentStyle,
+              backgroundImage: `${slide.gradient}, url(${slide.image})`,
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -80 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, ease: 'easeOut' }}
             >
-              {/* Content Container */}
-              <div
-                style={{
-                  backdropFilter: "blur(8px)",
-                  background: "rgba(255, 255, 255, 0.08)",
-                  padding: "20px",
-                  borderRadius: "20px",
-                  maxWidth: "90%",
-                  width: "100%",
-                  textAlign: "center",
-                }}
-              >
-                <Row justify="center" align="middle">
-                  <Col xs={24} sm={20} md={18} lg={14}>
-                    <Title
-                      level={2}
-                      style={{
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "clamp(24px, 5vw, 36px)",
-                        textShadow: "1px 1px 4px rgba(0,0,0,0.5)",
-                        marginBottom: 16,
-                      }}
-                    >
-                      {item.title}
-                    </Title>
-                    <Paragraph
-                      style={{
-                        color: "#f0f0f0",
-                        fontSize: "clamp(14px, 4vw, 18px)",
-                        margin: "0 auto 24px",
-                        maxWidth: 500,
-                        lineHeight: 1.6,
-                        textShadow: "1px 1px 3px rgba(0,0,0,0.3)",
-                      }}
-                    >
-                      {item.description}
-                    </Paragraph>
-                    <Button
-                      type="primary"
-                      size="large"
-                      style={{
-                        backgroundColor: "#D4A373",
-                        borderColor: "#D4A373",
-                        borderRadius: "30px",
-                        padding: "10px 28px",
-                        fontSize: "clamp(14px, 4vw, 16px)",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                      }}
-                    >
-                      Explore Now
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
-            </div>
+              <h1 style={{ fontSize: '3.5rem', color: 'white', fontWeight: 700 }}>{slide.title}</h1>
+              <p style={{ fontSize: '1.5rem', maxWidth: 600, color: 'white', marginBottom: 30 }}>{slide.description}</p>
+            </motion.div>
           </div>
-        ))}
-      </Carousel>
-    </div>
+        </div>
+      ))}
+    </Carousel>
   );
 };
 

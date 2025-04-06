@@ -5,6 +5,8 @@ import { store } from './app/store';
 import App from './App';
 import reportWebVitals from './reportWebVitals'; // Assuming you have this
 
+
+
 const root = ReactDOM.createRoot(document.getElementById('root')); // Create a root
 
 root.render( // Use root.render instead of ReactDOM.render
