@@ -2,6 +2,21 @@ import React, { useState, useEffect, useRef } from "react";
 import { getRequest } from "../../Services/api";
 import { Typography, Spin } from "antd";
 import styled, { keyframes } from "styled-components";
+import { createGlobalStyle } from "styled-components";
+
+const GlobalStyle = createGlobalStyle`
+  @keyframes waveGradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+`;
 
 const { Title, Paragraph } = Typography;
 
@@ -191,7 +206,19 @@ const AboutTitle = styled(Title)`
   font-size: 2.5rem !important;
   margin-bottom: 15px !important;
   letter-spacing: 0.5px !important;
-  color: inherit !important;
+  background: linear-gradient(
+    270deg,
+    #5c3317,
+rgb(255, 198, 28),
+rgb(199, 255, 45),
+    #f8f6f0
+  );
+  background-size: 400% 400%;
+  animation: waveGradient 6s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 `;
 
 const AboutContent = styled(Paragraph)`
@@ -231,7 +258,7 @@ function Gallery() {
     if (images.length > 1) {
       imageIntervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % images.length);
-      }, 3000);
+      }, 7000);
     }
     return () => clearInterval(imageIntervalRef.current);
   }, [images]);
@@ -240,7 +267,7 @@ function Gallery() {
   useEffect(() => {
     aboutIntervalRef.current = setInterval(() => {
       setAboutIndex((prev) => (prev + 1) % aboutSections.length);
-    }, 4000);
+    }, 8000);
     return () => clearInterval(aboutIntervalRef.current);
   }, []);
 
@@ -272,6 +299,7 @@ function Gallery() {
 
   return (
     <GalleryWrapper>
+      <GlobalStyle/>
       <CarouselContainer>
         {/* Image Carousel */}
         <ImageCarouselWrapper>

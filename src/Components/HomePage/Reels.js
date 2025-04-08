@@ -113,7 +113,6 @@ function CompanyReels() {
                     <iframe
                       src={embedUrl}
                       title={`reel-${reel.id}`}
-                      allow="autoplay; fullscreen"
                       allowFullScreen
                       frameBorder="0"
                       style={{

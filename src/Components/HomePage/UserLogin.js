@@ -9,14 +9,18 @@ import {
   ReloadOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import { useSelector, useDispatch } from 'react-redux';
-import { login, sendOtp, resetPassword } from '../../app/features/user/userSlice'; // Correct import
+import { useSelector, useDispatch } from "react-redux";
+import {
+  login,
+  sendOtp,
+  resetPassword,
+} from "../../app/features/user/userSlice"; // Correct import
 
 const { Title, Text, Link } = Typography;
 const { TabPane } = Tabs;
 
 const UserLogin = ({ onLoginSuccess }) => {
-  const isLoading = useSelector(state => state.user.isLoading);
+  const isLoading = useSelector((state) => state.user.isLoading);
   const dispatch = useDispatch();
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +32,7 @@ const UserLogin = ({ onLoginSuccess }) => {
     try {
       await dispatch(sendOtp(loginIdentifier)).unwrap();
       setIsOtpSent(true);
-      message.success("OTP sent successfully!"); 
+      message.success("OTP sent successfully!");
     } catch (error) {
       message.error("Failed to send OTP. Please try again."); // Handle potential errors
     }
@@ -39,15 +43,13 @@ const UserLogin = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    dispatch(login({ identifier: loginIdentifier, otp }))
-
-      .unwrap() // Use unwrap to handle promise results
+    dispatch(login({ identifier: loginIdentifier, password }))
+      .unwrap()
       .then(() => {
-        onLoginSuccess(); // Call onLoginSuccess on successful login
+        onLoginSuccess();
       })
       .catch(() => {
-        message.error("Invalid email/phone or password."); // Provide user feedback for login failure
-        // Handle login error if needed
+        message.error("Invalid email/phone or password.");
       });
   };
 
@@ -68,14 +70,75 @@ const UserLogin = ({ onLoginSuccess }) => {
         Login
       </Title>
 
-      <Tabs defaultActiveKey="password">
+      <Tabs defaultActiveKey="otp">
+        <TabPane tab="OTP Login" key="otp">
+          <Form layout="vertical">
+            <Form.Item label="Email or Phone Number">
+              <Input
+                placeholder="Email or Phone Number"
+                prefix={
+                  loginIdentifier.includes("@") ? (
+                    <MailOutlined />
+                  ) : (
+                    <PhoneOutlined />
+                  )
+                }
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
+                disabled={isOtpSent} // Disable the input after OTP is sent
+              />
+            </Form.Item>
+            {!isOtpSent ? (
+              <Form.Item>
+                <Button
+                  type="default"
+                  block
+                  onClick={handleSendOtp}
+                  icon={<SendOutlined />}
+                  loading={isLoading && !isOtpSent}
+                >
+                  Send OTP
+                </Button>
+              </Form.Item>
+            ) : (
+              <>
+                <Form.Item label="OTP">
+                  <Input
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    prefix={<ReloadOutlined />}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    block
+                    onClick={handleOtpLogin}
+                    icon={<KeyOutlined />}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Spin /> : "Login with OTP"}
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </TabPane>
+
         {/* 🔹 Password Login */}
         <TabPane tab="Password Login" key="password">
           <Form layout="vertical">
             <Form.Item label="Email or Phone Number">
               <Input
                 placeholder="Email or Phone Number"
-                prefix={loginIdentifier.includes("@") ? <MailOutlined /> : <PhoneOutlined />}
+                prefix={
+                  loginIdentifier.includes("@") ? (
+                    <MailOutlined />
+                  ) : (
+                    <PhoneOutlined />
+                  )
+                }
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
               />
@@ -89,12 +152,27 @@ const UserLogin = ({ onLoginSuccess }) => {
               />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" block onClick={handleLogin} icon={<KeyOutlined />} disabled={isLoading}>
+              <Button
+                type="primary"
+                block
+                onClick={handleLogin}
+                icon={<KeyOutlined />}
+                disabled={isLoading}
+              >
                 {isLoading ? <Spin /> : "Login"}
               </Button>
             </Form.Item>
-            <Text style={{ textAlign: "center", display: "block", marginBottom: 10 }}>
-              <Link icon={<QuestionCircleOutlined />} onClick={() => setResetEmail(loginIdentifier)}>
+            <Text
+              style={{
+                textAlign: "center",
+                display: "block",
+                marginBottom: 10,
+              }}
+            >
+              <Link
+                icon={<QuestionCircleOutlined />}
+                onClick={() => setResetEmail(loginIdentifier)}
+              >
                 Forgot Password?
               </Link>
             </Text>
@@ -102,37 +180,6 @@ const UserLogin = ({ onLoginSuccess }) => {
         </TabPane>
 
         {/* 🔹 OTP Login */}
-        <TabPane tab="OTP Login" key="otp">
-          <Form layout="vertical">
-            <Form.Item label="Email or Phone Number">
-              <Input
-                placeholder="Email or Phone Number"
-                prefix={loginIdentifier.includes("@") ? <MailOutlined /> : <PhoneOutlined />}
-                value={loginIdentifier}
-                onChange={(e) => setLoginIdentifier(e.target.value)}
-                disabled={isOtpSent} // Disable the input after OTP is sent
-              />
-            </Form.Item>
-            {!isOtpSent ? (
-              <Form.Item>
-                <Button type="default" block onClick={handleSendOtp} icon={<SendOutlined />} loading={isLoading && !isOtpSent}>
-                  Send OTP
-                </Button>
-              </Form.Item>
-            ) : (
-              <>
-                <Form.Item label="OTP">
-                  <Input placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} prefix={<ReloadOutlined />} />
-                </Form.Item>
-                <Form.Item>
-                  <Button type="primary" block onClick={handleOtpLogin} icon={<KeyOutlined />} disabled={isLoading}>
-                    {isLoading ? <Spin /> : "Login with OTP"}
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </TabPane>
       </Tabs>
     </div>
   );
