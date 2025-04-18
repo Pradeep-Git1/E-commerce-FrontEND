@@ -10,7 +10,7 @@ function MainContent() {
         <HeroCarousel/>
         <TopProducts/>
         <Gallery/>
-        <CompanyReels/>
+        {/* <CompanyReels/> */}
     </div>
   )
 }

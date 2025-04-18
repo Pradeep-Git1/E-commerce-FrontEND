@@ -193,8 +193,9 @@ const CategoryPage = () => {
                     {filteredProducts.length > 0 ? (
                         <Row gutter={[16, 16]} justify="center">
                             {filteredProducts.map((product, index) => (
-                                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                                <Col key={product.id} xs={24} sm={12} md={8} lg={6} style={{ minHeight: "100%", margin:"20px", maxHeight: "70vh"}}>
                                     <div
+                                        style={{minHeight:"100%"}}
                                         ref={(node) => {
                                             productRefs.current[index] = node;
                                         }}

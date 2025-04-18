@@ -32,8 +32,8 @@ const ProductCard = ({ product, onModalOpen }) => {
     borderRadius: 16,
     overflow: "hidden",
     position: "relative",
-    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.18)",
-    height: "100%",
+    boxShadow: "12px 12px 12px rgba(51, 17, 17, 0.84)",
+    minHeight: "100%",
     display: "flex",
     flexDirection: "column",
     transition: "transform 0.3s ease-in-out",
@@ -68,6 +68,7 @@ const ProductCard = ({ product, onModalOpen }) => {
                             background-position: 0% 50%;
                         }
                     }
+                          
                 `}
       </style>
       <div
@@ -101,17 +102,30 @@ const ProductCard = ({ product, onModalOpen }) => {
           </Carousel>
         </div>
 
-        <div style={{ padding: "20px", textAlign: "left" }}>
+        <div
+          style={{
+            padding: "20px",
+            textAlign: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.81)",
+            minHeight: "100%",
+            flexGrow: "1",
+          }}
+        >
           <Title
             level={4}
-            style={{ marginBottom: 8, lineHeight: "1.2", fontWeight: 600 }}
+            style={{
+              marginBottom: 8,
+              lineHeight: "1.2",
+              fontWeight: 700,
+              color: "rgb(81, 255, 0)",
+            }}
           >
             {product.name}
           </Title>
           <Paragraph
             style={{
               fontSize: 14,
-              color: "#666",
+              color: "rgba(240, 253, 54, 0.66)",
               marginBottom: 12,
               maxHeight: "60px",
               overflow: "hidden",
@@ -170,7 +184,7 @@ const ProductCard = ({ product, onModalOpen }) => {
                 color="geekblue"
                 style={{ fontSize: 12, padding: "5px 10px" }}
               >
-                Size: {product.size}
+                {product.size}
               </Tag>
             )}
           </div>

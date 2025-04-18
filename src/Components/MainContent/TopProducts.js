@@ -91,11 +91,11 @@ const TopProducts = () => {
               products.map((product, index) => (
                 <Col
                   key={product.id}
-                  xs={16}
-                  sm={12}
+                  xs={24}
+                  sm={24}
                   md={8}
-                  lg={6}
-                  xl={4}
+                  lg={8}
+                  xl={6}
                   ref={(node) => (productRefs.current[index] = node)}
                   style={{ flex: "0 0 auto" }}
                 >

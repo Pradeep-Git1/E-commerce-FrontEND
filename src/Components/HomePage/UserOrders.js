@@ -8,8 +8,11 @@ import {
   Divider,
   List,
   Collapse,
+  Button,
+  Modal,
+  message,
 } from "antd";
-import { getRequest } from "../../Services/api";
+import { getRequest, postRequest } from "../../Services/api";
 import { useSelector } from "react-redux";
 import {
   ShoppingOutlined,
@@ -17,6 +20,7 @@ import {
   CalendarOutlined,
   DollarCircleOutlined,
 } from "@ant-design/icons";
+import OrderConfirmationModal from "./OrderConfirmationModal";
 
 const { Text, Title } = Typography;
 const { Panel } = Collapse;
@@ -28,6 +32,12 @@ function UserOrdersMobile() {
   const [loading, setLoading] = useState(true);
   const user = useSelector((state) => state.user.data);
   const userId = user?.id;
+  const [orderConfirmationVisible, setOrderConfirmationVisible] =
+    useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [confirmCancelVisible, setConfirmCancelVisible] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -40,8 +50,8 @@ function UserOrdersMobile() {
       setLoading(true);
       const response = await getRequest(`/orders/?user=${userId}`);
       setOrders(response);
-      setExpandedOrders(response.map((o) => o.id)); // expand all orders
-      setExpandedStatusGroups([]); // collapse all groups initially
+      setExpandedOrders(response.map((o) => o.id));
+      setExpandedStatusGroups([]);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -51,13 +61,14 @@ function UserOrdersMobile() {
 
   const groupOrdersByStatus = (orders) => {
     return orders.reduce((groups, order) => {
-      const status = order.status || "Unknown";
-      if (!groups[status]) groups[status] = [];
-      groups[status].push(order);
+      const paymentStatus = order.payment_status || "Payment Unknown";
+      const displayStatus =
+        paymentStatus === "Completed" ? "Paid Orders" : "Pending Payment";
+      if (!groups[displayStatus]) groups[displayStatus] = [];
+      groups[displayStatus].push(order);
       return groups;
     }, {});
   };
-
   const toggleOrderExpansion = (orderId) => {
     if (expandedOrders.includes(orderId)) {
       setExpandedOrders(expandedOrders.filter((id) => id !== orderId));
@@ -89,12 +100,52 @@ function UserOrdersMobile() {
     return "#f5222d";
   };
 
+  const handleOrderClick = (orderId) => {
+    setSelectedOrderId(orderId);
+    setOrderConfirmationVisible(true);
+  };
+
+  const handleCloseOrderConfirmationModal = () => {
+    setOrderConfirmationVisible(false);
+    setSelectedOrderId(null);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancelOrderId) {
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const response = await postRequest(`cancel-order/${cancelOrderId}/`, {
+        order_id: cancelOrderId,
+      });
+      if (response.success) {
+        message.success(`Order #${cancelOrderId} has been cancelled.`);
+        fetchUserOrders(userId);
+      } else {
+        message.error(
+          `Failed to cancel order #${cancelOrderId}. Please try again.`
+        );
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      message.error(
+        `Failed to cancel order #${cancelOrderId}. Please try again.`
+      );
+    } finally {
+      setIsCancelling(false);
+      setConfirmCancelVisible(false);
+      setCancelOrderId(null);
+    }
+  };
+
   const renderOrdersGroupedByStatus = () => {
     const grouped = groupOrdersByStatus(orders);
-    return Object.entries(grouped).map(([status, statusOrders]) => (
-      <div key={status} style={{ marginBottom: 16 }}>
+    return Object.entries(grouped).map(([displayStatus, statusOrders]) => (
+      <div key={displayStatus} style={{ marginBottom: 16 }}>
         <div
-          onClick={() => toggleStatusGroup(status)}
+          onClick={() => toggleStatusGroup(displayStatus)}
           style={{
             background: "#f0f0f0",
             padding: "6px 12px",
@@ -103,15 +154,18 @@ function UserOrdersMobile() {
             cursor: "pointer",
           }}
         >
-          <Tag color={getStatusColor(status)} style={{ fontSize: 12 }}>
-            {status}
+          <Tag
+            color={displayStatus === "Paid Orders" ? "#87d068" : "#faad14"}
+            style={{ fontSize: 12 }}
+          >
+            {displayStatus}
           </Tag>{" "}
           <Text type="secondary" style={{ fontSize: 12 }}>
             ({statusOrders.length} orders)
           </Text>
         </div>
 
-        {expandedStatusGroups.includes(status) && (
+        {expandedStatusGroups.includes(displayStatus) && (
           <List
             itemLayout="vertical"
             dataSource={statusOrders}
@@ -125,12 +179,21 @@ function UserOrdersMobile() {
                     background: "#f9f9f9",
                     boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
                     margin: "8px 0",
+                    cursor: "pointer",
                   }}
                 >
-                  <div onClick={() => toggleOrderExpansion(order.id)}>
-                    <Row justify="space-between" align="middle">
+                  {/* ... rest of your Card content remains the same */}
+                  <div onClick={() => handleOrderClick(order.id)}>
+                    <Row
+                      onClick={() => handleOrderClick(order.id)}
+                      justify="space-between"
+                      align="middle"
+                    >
                       <Col>
-                        <Title level={5} style={{ margin: 0, fontSize: "14px" }}>
+                        <Title
+                          level={5}
+                          style={{ margin: 0, fontSize: "14px" }}
+                        >
                           <ShoppingOutlined style={{ marginRight: 6 }} /> #
                           {order.order_number}
                         </Title>
@@ -142,9 +205,15 @@ function UserOrdersMobile() {
                       </Col>
                     </Row>
 
-                    <Divider style={{ margin: "8px 0", background: "#e8e8e8" }} />
+                    <Divider
+                      style={{ margin: "8px 0", background: "#e8e8e8" }}
+                    />
 
-                    <Row justify="space-between" align="middle">
+                    <Row
+                      onClick={() => handleOrderClick(order.id)}
+                      justify="space-between"
+                      align="middle"
+                    >
                       <Col>
                         <Text strong style={{ fontSize: "13px" }}>
                           <DollarCircleOutlined style={{ marginRight: 2 }} />{" "}
@@ -157,6 +226,27 @@ function UserOrdersMobile() {
                         </Text>
                       </Col>
                     </Row>
+
+                    {order.shipping_address && (
+                      <>
+                        <Divider
+                          style={{ margin: "8px 0", background: "#e8e8e8" }}
+                        />
+                        <Typography.Text
+                          type="secondary"
+                          style={{
+                            fontSize: "11px",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Shipping To:
+                        </Typography.Text>
+                        <Typography.Text style={{ fontSize: "12px" }}>
+                          {order.shipping_address}
+                        </Typography.Text>
+                      </>
+                    )}
                   </div>
 
                   <Collapse
@@ -165,7 +255,12 @@ function UserOrdersMobile() {
                   >
                     <Panel key="1" showArrow={false}>
                       {order.items.map((item) => (
-                        <Row key={item.id} justify="space-between" style={{ marginBottom: 6 }}>
+                        <Row
+                          onClick={() => handleOrderClick(order.id)}
+                          key={item.id}
+                          justify="space-between"
+                          style={{ marginBottom: 6 }}
+                        >
                           <Col span={14}>
                             <Text style={{ fontSize: "12px" }}>
                               {item.product_name} x {item.quantity}
@@ -178,6 +273,22 @@ function UserOrdersMobile() {
                           </Col>
                         </Row>
                       ))}
+                      {order.status === "Pending" && (
+                        <div style={{ marginTop: 12, textAlign: "right" }}>
+                          <Button
+                            type="default" // Or 'dashed' for a different visual style
+                            size="small"
+                            icon={<ShoppingOutlined rotate={180} />}
+                            onClick={() => {
+                              setCancelOrderId(order.id);
+                              setConfirmCancelVisible(true);
+                            }}
+                            style={{ borderColor: "red", color: "red" }} // Subtle red border and text
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      )}{" "}
                     </Panel>
                   </Collapse>
                 </Card>
@@ -188,7 +299,6 @@ function UserOrdersMobile() {
       </div>
     ));
   };
-
   return (
     <div style={{ padding: "8px" }}>
       <Title level={4} style={{ fontSize: "16px", marginBottom: 10 }}>
@@ -199,7 +309,37 @@ function UserOrdersMobile() {
           Loading...
         </Text>
       ) : orders.length > 0 ? (
-        renderOrdersGroupedByStatus()
+        <>
+          {renderOrdersGroupedByStatus()}
+          <OrderConfirmationModal
+            visible={orderConfirmationVisible}
+            orderId={selectedOrderId}
+            onClose={handleCloseOrderConfirmationModal}
+          />
+          <Modal
+            title="Confirm Cancellation"
+            visible={confirmCancelVisible}
+            onCancel={() => setConfirmCancelVisible(false)}
+            footer={[
+              <Button key="back" onClick={() => setConfirmCancelVisible(false)}>
+                No
+              </Button>,
+              <Button
+                key="submit"
+                type="danger"
+                loading={isCancelling}
+                onClick={handleConfirmCancel}
+              >
+                Yes, Cancel Order
+              </Button>,
+            ]}
+          >
+            <Typography.Paragraph>
+              Are you sure you want to cancel order #{cancelOrderId}? This
+              action cannot be undone.
+            </Typography.Paragraph>
+          </Modal>
+        </>
       ) : (
         <Text type="secondary" style={{ fontSize: "12px" }}>
           No orders yet.
