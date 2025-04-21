@@ -40,7 +40,7 @@ const CartMenu = ({ setDrawerContent, setDrawerVisible }) => {
             setTimeout(() => {
                 setDrawerContent("login");
                 setDrawerVisible(true);
-            }, 2000);
+            }, 1000);
         }
     };
 

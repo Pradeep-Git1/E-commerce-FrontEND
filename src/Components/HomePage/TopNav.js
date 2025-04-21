@@ -263,7 +263,12 @@ const TopNav = () => {
         {drawerContent === "login" && (
           <UserLogin onLoginSuccess={handleLoginSuccess} />
         )}
-        {drawerContent === "cart" && <CartMenu />}
+        {drawerContent === "cart" && (
+          <CartMenu
+            setDrawerContent={setDrawerContent}
+            setDrawerVisible={setDrawerVisible}
+          />
+        )}
         {drawerContent === "menu" && (
           <Menu mode="vertical" selectable={false}>
             {categories.map((category) => (
