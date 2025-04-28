@@ -6,37 +6,37 @@ const slides = [
   {
     title: "Delicious Homemade Chocolates",
     description: "Crafted with love, no preservatives – just pure indulgence.",
-    image: "/images/chocolates.jpg",
+    image: `${process.env.PUBLIC_URL}/images/chocolates.jpg`,
     gradient: "linear-gradient(to right, #3a1c71cc, #d76d77cc, #ffaf7bcc)", // Purple-pink
   },
   {
     title: "Soothing Herbal Teas",
     description: "Freshly blended, naturally calming – a cup of health and joy.",
-    image: "/images/tea.jpg",
+    image: `${process.env.PUBLIC_URL}/images/tea.jpg`,
     gradient: "linear-gradient(to right, #0f2027cc, #203a43cc, #2c5364cc)", // Herbal deep greens
   },
   {
     title: "Aromatic Essential Oils",
     description: "Cold-pressed, pure extracts to elevate your wellness rituals.",
-    image: "/images/oils.jpg",
+    image: `${process.env.PUBLIC_URL}/images/oils.jpg`,
     gradient: "linear-gradient(to right, #355c7dcc, #6c5b7bcc, #c06c84cc)", // Lavender-green blend
   },
   {
     title: "Exotic Indian Spices",
     description: "Handpicked spices for an authentic culinary journey.",
-    image: "/images/spices.jpg",
+    image: `${process.env.PUBLIC_URL}/images/spices.jpg`,
     gradient: "linear-gradient(to right, #8e0e00cc, #1f1c18cc)", // Spicy red-black
   },
   {
     title: "Perfect Gifting Combos",
     description: "Elegant, edible gifts that spark joy & taste divine.",
-    image: "/images/combos.jpg",
+    image: `${process.env.PUBLIC_URL}/images/combos.jpg`,
     gradient: "linear-gradient(to right, #8360c3cc, #2ebf91cc)", // Teal-purple
   },
   {
     title: "Limited Edition Seasonal Packs",
     description: "Celebrate flavors with our handcrafted seasonal delights.",
-    image: "/images/seasonal.jpg",
+    image: `${process.env.PUBLIC_URL}/images/seasonal.jpg`,
     gradient: "linear-gradient(to right, #fc5c7dcc, #6a82fbcc)", // Warm pink-blue
   },
 ];

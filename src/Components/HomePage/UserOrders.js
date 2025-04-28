@@ -182,13 +182,8 @@ function UserOrdersMobile() {
                     cursor: "pointer",
                   }}
                 >
-                  {/* ... rest of your Card content remains the same */}
                   <div onClick={() => handleOrderClick(order.id)}>
-                    <Row
-                      onClick={() => handleOrderClick(order.id)}
-                      justify="space-between"
-                      align="middle"
-                    >
+                    <Row justify="space-between" align="middle">
                       <Col>
                         <Title
                           level={5}
@@ -197,6 +192,12 @@ function UserOrdersMobile() {
                           <ShoppingOutlined style={{ marginRight: 6 }} /> #
                           {order.order_number}
                         </Title>
+                        <Tag
+                          color={getStatusColor(order.status)}
+                          style={{ marginTop: 4, fontSize: "11px" }}
+                        >
+                          {order.status}
+                        </Tag>
                       </Col>
                       <Col>
                         <Text type="secondary" style={{ fontSize: "11px" }}>
@@ -209,14 +210,10 @@ function UserOrdersMobile() {
                       style={{ margin: "8px 0", background: "#e8e8e8" }}
                     />
 
-                    <Row
-                      onClick={() => handleOrderClick(order.id)}
-                      justify="space-between"
-                      align="middle"
-                    >
+                    <Row justify="space-between" align="middle">
                       <Col>
                         <Text strong style={{ fontSize: "13px" }}>
-                          <DollarCircleOutlined style={{ marginRight: 2 }} />{" "}
+                          <DollarCircleOutlined style={{ marginRight: 2 }} />
                           {order.total_amount}
                         </Text>
                       </Col>
@@ -276,19 +273,19 @@ function UserOrdersMobile() {
                       {order.status === "Pending" && (
                         <div style={{ marginTop: 12, textAlign: "right" }}>
                           <Button
-                            type="default" // Or 'dashed' for a different visual style
+                            type="default"
                             size="small"
                             icon={<ShoppingOutlined rotate={180} />}
                             onClick={() => {
                               setCancelOrderId(order.id);
                               setConfirmCancelVisible(true);
                             }}
-                            style={{ borderColor: "red", color: "red" }} // Subtle red border and text
+                            style={{ borderColor: "red", color: "red" }}
                           >
                             Cancel
                           </Button>
                         </div>
-                      )}{" "}
+                      )}
                     </Panel>
                   </Collapse>
                 </Card>

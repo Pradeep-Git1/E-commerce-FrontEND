@@ -18,7 +18,6 @@ const getCookie = (name) => {
           }
       }
   }
-  console.log("CSRF Token:", cookieValue); // Debugging line
   return cookieValue;
 };
 

@@ -32,6 +32,18 @@ const FooterComponent = () => {
     setIsModalOpen(true);
   };
 
+  const isValidUrl = (url) => {
+    try {
+      if (!url || typeof url !== 'string') {
+        return false;
+      }
+      const trimmedUrl = url.trim();
+      return trimmedUrl === "" || new URL(trimmedUrl);
+    } catch (error) {
+      return false;
+    }
+  };
+
   const isValidGoogleMapsUrl = (url) =>
     typeof url === "string" && url.includes("https://www.google.com/maps/embed");
 
@@ -85,40 +97,43 @@ const FooterComponent = () => {
               {company?.public_contact_number && (
                 <Paragraph style={infoText}>
                   <PhoneOutlined />{" "}
-                  <span style={{ marginLeft: 6 }}>{company.public_contact_number}</span>
+                  <a href={`tel:${company.public_contact_number}`} style={actionLinkStyle}>
+                    <span style={{ marginLeft: 6 }}>{company.public_contact_number}</span>
+                  </a>
                 </Paragraph>
               )}
               {company?.public_email && (
                 <Paragraph style={infoText}>
                   <MailOutlined />{" "}
-                  <span style={{ marginLeft: 6 }}>{company.public_email}</span>
+                  <a href={`mailto:${company.public_email}`} style={actionLinkStyle}>
+                    <span style={{ marginLeft: 6 }}>{company.public_email}</span>
+                  </a>
                 </Paragraph>
               )}
 
               {/* Social Icons */}
               <div style={{ marginTop: 16 }}>
-                {socialIcons.map(
-                  (item, idx) =>
-                    item.url && (
-                      <Tooltip title={item.label} key={idx}>
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "#ccc",
-                            fontSize: 20,
-                            marginRight: 12,
-                            transition: "color 0.3s",
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = "#ccc")}
-                        >
-                          {item.icon}
-                        </a>
-                      </Tooltip>
-                    )
-                )}
+                {socialIcons
+                  .filter((item) => isValidUrl(item.url))
+                  .map((item, idx) => (
+                    <Tooltip title={item.label} key={idx}>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "#ccc",
+                          fontSize: 20,
+                          marginRight: 12,
+                          transition: "color 0.3s",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "#ccc")}
+                      >
+                        {item.icon}
+                      </a>
+                    </Tooltip>
+                  ))}
               </div>
             </Col>
 
@@ -206,6 +221,12 @@ const infoText = {
   color: "#bbbbbb",
   fontSize: 14,
   marginBottom: 6,
+};
+
+const actionLinkStyle = {
+  color: "#bbbbbb",
+  textDecoration: "none",
+  transition: "color 0.3s",
 };
 
 export default FooterComponent;

@@ -134,7 +134,7 @@ const CategoryPage = () => {
     };
 
     return (
-        <div style={{ padding: "16px", minHeight: "100vh" }}>
+        <div style={{ padding: "5px", minHeight: "100vh" }}>
             <Title
                 level={2}
                 style={{ textAlign: "center", color: "#333", marginBottom: "16px" }}
@@ -191,11 +191,10 @@ const CategoryPage = () => {
             ) : (
                 <>
                     {filteredProducts.length > 0 ? (
-                        <Row gutter={[16, 16]} justify="center">
+                        <Row gutter={[24, 24]} justify="center">
                             {filteredProducts.map((product, index) => (
-                                <Col key={product.id} xs={24} sm={12} md={8} lg={6} style={{ minHeight: "100%", margin:"20px", maxHeight: "70vh"}}>
+                                <Col key={product.id} xs={12} sm={12} md={8} lg={6}>
                                     <div
-                                        style={{minHeight:"100%"}}
                                         ref={(node) => {
                                             productRefs.current[index] = node;
                                         }}
