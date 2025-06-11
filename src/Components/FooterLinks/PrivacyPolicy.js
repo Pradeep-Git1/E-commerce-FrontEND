@@ -11,21 +11,21 @@ const PrivacyPolicy = () => {
         🔒 Privacy Policy
       </Title>
       <Paragraph className="text-center text-muted">
-        Chocosing is committed to safeguarding your personal information. Read below to understand how we handle your data.
+        ChocoSign is committed to safeguarding your personal information. Read below to understand how we handle your data.
       </Paragraph>
 
       <Collapse accordion className="mt-4 shadow-sm">
         {/* 1. Scope of Definition */}
         <Panel header="1. Scope of Definition" key="1">
           <Paragraph>
-            Chocosing is committed to safeguarding your personal information as you use our website. Before you use the website operated by Chocosing, please review this Privacy Policy carefully. We prioritize your privacy and value the trust you place in us. By using our website and the services we offer, you consent to the collection, use, and disclosure of your information as described in this Privacy Policy.
+            ChocoSign is committed to safeguarding your personal information as you use our website. Before you use the website operated by ChocoSign, please review this Privacy Policy carefully. We prioritize your privacy and value the trust you place in us. By using our website and the services we offer, you consent to the collection, use, and disclosure of your information as described in this Privacy Policy.
           </Paragraph>
         </Panel>
 
         {/* 2. Information Collection */}
         <Panel header="2. Information Collection" key="2">
           <Paragraph>
-            When you use the Chocosing website, we collect the following information:
+            When you use the ChocoSign website, we collect the following information:
             <ul>
               <li><strong>Personal Information:</strong> Name, mobile number, email address, and personal address.</li>
               <li><strong>Billing Details:</strong> Address and payment method. Please note that we do not collect credit/debit card numbers, expiry dates, or other card details. Our online payment partner, CashFree, securely processes this information.</li>
@@ -54,7 +54,6 @@ const PrivacyPolicy = () => {
             <ul>
               <li><strong>Business Transitions:</strong> If we sell, merge, or restructure our business, we may transfer your information to a third party. We will ensure your privacy rights remain protected.</li>
               <li><strong>Verification:</strong> We may allow third-party service providers to process your data for verification purposes. They must follow our security and data protection standards.</li>
-              <li><strong>External Links:</strong> Our website contains links to other websites, such as <a href="https://www.cashfree.com/privacy/">CashFree</a>. This Privacy Policy does not apply to those sites. We recommend you to review their privacy policies.</li>
             </ul>
           </Paragraph>
         </Panel>
@@ -69,7 +68,7 @@ const PrivacyPolicy = () => {
         {/* 6. Contact Us */}
         <Panel header="6. Contact Us" key="6">
           <Paragraph>
-            For any questions about this privacy statement, please reach out to us at <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>.
+            For any questions about this privacy statement, please reach out to us at <a href="mailto:sales@chocosign.in">sales@chocosign.in</a>.
           </Paragraph>
         </Panel>
       </Collapse>

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Typography, Spin, Alert, Row, Col } from "antd";
 import { getRequest } from "../../Services/api";
+import ChocolateLoader from "../HomePage/ChocolateLoader";
 import ProductCard from "../Categories/ProductCard";
 import ProductModal from "../Categories/ProductModal";
 
 const { Title, Paragraph } = Typography;
-
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "";
 
 const TopProducts = () => {
   const [products, setProducts] = useState([]);
@@ -21,7 +21,7 @@ const TopProducts = () => {
       const updatedProducts = response.map(product => ({
         ...product,
         images: product.images.map(image =>
-          image.startsWith("/") ? `${BASE_URL}${image}` : `${BASE_URL}/${image}`
+          image.startsWith("/") ? `${image}` : `${image}`
         )
       }));
       setProducts(updatedProducts);
@@ -69,8 +69,11 @@ const TopProducts = () => {
                 md={8}
                 lg={8}
                 xl={6}
+                xxl={4}
               >
-                <ProductCard product={product} onModalOpen={openModal} />
+                <Suspense fallback={<ChocolateLoader />}>
+                  <ProductCard product={product} onModalOpen={openModal} />
+                </Suspense>
               </Col>
             ))
           ) : (
@@ -82,11 +85,13 @@ const TopProducts = () => {
       )}
 
       {selectedProduct && (
-        <ProductModal
-          product={selectedProduct}
-          visible={modalVisible}
-          onClose={closeModal}
-        />
+        <Suspense fallback={<ChocolateLoader />}>
+          <ProductModal
+            product={selectedProduct}
+            visible={modalVisible}
+            onClose={closeModal}
+          />
+        </Suspense>
       )}
 
       <style>

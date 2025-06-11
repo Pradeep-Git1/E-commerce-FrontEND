@@ -200,7 +200,8 @@ const FooterComponent = () => {
         footer={null}
         onCancel={() => setIsModalOpen(false)}
         centered
-        bodyStyle={{ padding: 24 }}
+        bodyStyle={{ padding: 0 }}
+        style={{ padding: 0 }}
       >
         {modalContent}
       </Modal>

@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Token management
 const getToken = () => localStorage.getItem("authToken");
 const setToken = (token) => localStorage.setItem("authToken", token);
 const removeToken = () => localStorage.removeItem("authToken");
@@ -23,9 +22,9 @@ const getCookie = (name) => {
 
 // Axios instance configuration
 const api = axios.create({
-    baseURL: process.env.NODE_ENV === "production" ? "http://localhost:8000/client" : "http://localhost:8000/client",
+    baseURL: "https://chocosign.in/client",
     timeout: 0,
-    withCredentials: true, // Important for cookies
+    withCredentials: true, 
 });
 
 // Axios request interceptor
@@ -38,7 +37,6 @@ api.interceptors.request.use(
       const csrfToken = getCookie("csrftoken");
       if (csrfToken) {
           config.headers["X-CSRFToken"] = csrfToken;
-          console.log("Adding CSRF token to headers:", csrfToken); // Debugging
       }
       return config;
   },
@@ -58,7 +56,6 @@ api.interceptors.response.use(
                 originalRequest._retry = true;
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (!refreshToken) {
-                    console.error("No refresh token available.");
                     redirectToLogin();
                     return Promise.reject(error);
                 }
@@ -74,7 +71,6 @@ api.interceptors.response.use(
                         return api(originalRequest);
                     }
                 } catch (refreshError) {
-                    console.error("Failed to refresh token:", refreshError);
                     redirectToLogin();
                     return Promise.reject(refreshError);
                 }
@@ -89,7 +85,6 @@ function redirectToLogin() {
     localStorage.removeItem('refreshToken');
 }
 
-// API utility functions
 export const getRequest = (url, config = {}) => api.get(url, config).then(res => res.data);
 export const postRequest = (url, data, config = {}) => api.post(url, data, config).then(res => res.data);
 export const putRequest = (url, data, config = {}) => api.put(url, data, config).then(res => res.data);

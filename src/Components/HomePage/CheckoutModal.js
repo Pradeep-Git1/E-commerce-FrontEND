@@ -26,8 +26,6 @@ import {
 } from "@ant-design/icons";
 import moment from "moment";
 
-
-
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -46,7 +44,6 @@ const CheckoutModal = ({
   calculateTotal,
   getImageSrc,
 }) => {
-  
   const user = useSelector((state) => state.user.data);
   const [isGift, setIsGift] = useState(false);
   const [giftRecipientName, setGiftRecipientName] = useState("");
@@ -61,10 +58,14 @@ const CheckoutModal = ({
   const [currentOrderId, setCurrentOrderId] = useState(null);
 
   useEffect(() => {
-    if (checkoutModalVisible) {
+    if (checkoutModalVisible && user?.id) {
       fetchUserAddresses();
+    } else if (!checkoutModalVisible) {
+      // Reset state when the modal is closed
+      setSelectedAddress(null);
+      setSelectedAddressDetails(null);
     }
-  }, [checkoutModalVisible, user]);
+  }, [checkoutModalVisible, user?.id]);
 
   const fetchUserAddresses = async () => {
     setLoadingAddresses(true);
@@ -110,6 +111,11 @@ const CheckoutModal = ({
   };
 
   const handleProceedToPayments = async () => {
+    if (!selectedAddress) {
+      message.error("Please select a shipping address.");
+      return;
+    }
+
     try {
       const payload = {
         address_id: selectedAddress,
@@ -126,7 +132,6 @@ const CheckoutModal = ({
       if (response && response.order_id) {
         message.success("Order initialized. Review and confirm.");
         setCurrentOrderId(response.order_id);
-  
         setConfirmationModalVisible(true);
       } else {
         message.error("Order initiation failed. Try again.");
@@ -190,6 +195,13 @@ const CheckoutModal = ({
                   onChange={handleAddressChange}
                   loading={loadingAddresses}
                   disabled={loadingAddresses}
+                  placeholder={
+                    loadingAddresses
+                      ? "Loading addresses..."
+                      : userAddresses.length === 0
+                      ? "No addresses available"
+                      : "Select an address"
+                  }
                 >
                   {userAddresses.map((address) => (
                     <Option key={address.id} value={address.id}>
@@ -305,9 +317,15 @@ const CheckoutModal = ({
               onClick={handleProceedToPayments}
               block
               style={{ marginTop: "12px" }}
+              disabled={userAddresses.length === 0}
             >
               Confirm Order
             </Button>
+            {userAddresses.length === 0 && (
+              <Text type="secondary" style={{ display: "block", marginTop: "8px" }}>
+                Please add a shipping address to proceed.
+              </Text>
+            )}
           </div>
         </div>
       </Modal>

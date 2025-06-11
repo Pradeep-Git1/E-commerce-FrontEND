@@ -1,186 +1,128 @@
 import React, { useState } from "react";
-import { Button, Input, Typography, Tabs, Form, Spin, message } from "antd";
+import { Button, Input, Typography, Form, Spin, message } from "antd";
 import {
   MailOutlined,
-  PhoneOutlined,
-  LockOutlined,
-  KeyOutlined,
   SendOutlined,
   ReloadOutlined,
-  QuestionCircleOutlined,
+  KeyOutlined,
+  ArrowLeftOutlined, // Import the back arrow icon
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  login,
-  sendOtp,
-  resetPassword,
-} from "../../app/features/user/userSlice"; // Correct import
+import { sendOtp, login } from "../../app/features/user/userSlice"; // Correct import
 
-const { Title, Text, Link } = Typography;
-const { TabPane } = Tabs;
+const { Title } = Typography;
+const primaryColor = "#593E2F"; // Consistent with TopNav
 
 const UserLogin = ({ onLoginSuccess }) => {
   const isLoading = useSelector((state) => state.user.isLoading);
   const dispatch = useDispatch();
-  const [loginIdentifier, setLoginIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
 
   const handleSendOtp = async () => {
+    if (!email) {
+      message.error("Please enter your email address.");
+      return;
+    }
     try {
-      await dispatch(sendOtp(loginIdentifier)).unwrap();
+      await dispatch(sendOtp(email)).unwrap();
       setIsOtpSent(true);
-      message.success("OTP sent successfully!");
+      message.success("OTP sent to your email!");
     } catch (error) {
-      message.error("Failed to send OTP. Please try again."); // Handle potential errors
+      message.error("Failed to send OTP. Please try again.");
     }
   };
 
-  const handleResetPassword = () => {
-    dispatch(resetPassword(resetEmail));
-  };
-
-  const handleLogin = async () => {
-    dispatch(login({ identifier: loginIdentifier, password }))
-      .unwrap()
-      .then(() => {
-        onLoginSuccess();
-      })
-      .catch(() => {
-        message.error("Invalid email/phone or password.");
-      });
-  };
-
   const handleOtpLogin = () => {
-    dispatch(login({ identifier: loginIdentifier, otp }))
+    dispatch(login({ identifier: email, otp }))
       .unwrap()
       .then(() => {
         onLoginSuccess();
       })
       .catch(() => {
-        message.error("Invalid OTP."); // Provide user feedback for OTP login failure
+        message.error("Invalid OTP.");
       });
+  };
+
+  const handleGoBackToEmail = () => {
+    setIsOtpSent(false);
+    setOtp("");
   };
 
   return (
-    <div>
-      <Title level={3} style={{ textAlign: "center", marginBottom: 24 }}>
-        Login
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column", // Stack elements vertically
+        gap: 16, // Add some spacing between elements
+        padding: "16px 0", // Add some vertical padding within the drawer
+      }}
+    >
+      <Title level={4} style={{ textAlign: "left", marginBottom: 12, color: primaryColor }}>
+        Login with OTP
       </Title>
-
-      <Tabs defaultActiveKey="otp">
-        <TabPane tab="OTP Login" key="otp">
-          <Form layout="vertical">
-            <Form.Item label="Email or Phone Number">
+      <Form layout="vertical" size="large">
+        <Form.Item label="Email Address">
+          <Input
+            placeholder="Enter your email address"
+            prefix={<MailOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isOtpSent}
+          />
+        </Form.Item>
+        {!isOtpSent ? (
+          <Form.Item>
+            <Button
+              type="primary"
+              block
+              onClick={handleSendOtp}
+              icon={<SendOutlined />}
+              loading={isLoading && !isOtpSent}
+              size="large"
+              style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
+            >
+              Send OTP
+            </Button>
+          </Form.Item>
+        ) : (
+          <>
+            <Form.Item label="OTP">
               <Input
-                placeholder="Email or Phone Number"
-                prefix={
-                  loginIdentifier.includes("@") ? (
-                    <MailOutlined />
-                  ) : (
-                    <PhoneOutlined />
-                  )
-                }
-                value={loginIdentifier}
-                onChange={(e) => setLoginIdentifier(e.target.value)}
-                disabled={isOtpSent} // Disable the input after OTP is sent
+                placeholder="Enter the OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                prefix={<ReloadOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />}
+                size="large"
               />
-            </Form.Item>
-            {!isOtpSent ? (
-              <Form.Item>
-                <Button
-                  type="default"
-                  block
-                  onClick={handleSendOtp}
-                  icon={<SendOutlined />}
-                  loading={isLoading && !isOtpSent}
-                >
-                  Send OTP
-                </Button>
-              </Form.Item>
-            ) : (
-              <>
-                <Form.Item label="OTP">
-                  <Input
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    prefix={<ReloadOutlined />}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    block
-                    onClick={handleOtpLogin}
-                    icon={<KeyOutlined />}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Spin /> : "Login with OTP"}
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </TabPane>
-
-        {/* 🔹 Password Login */}
-        <TabPane tab="Password Login" key="password">
-          <Form layout="vertical">
-            <Form.Item label="Email or Phone Number">
-              <Input
-                placeholder="Email or Phone Number"
-                prefix={
-                  loginIdentifier.includes("@") ? (
-                    <MailOutlined />
-                  ) : (
-                    <PhoneOutlined />
-                  )
-                }
-                value={loginIdentifier}
-                onChange={(e) => setLoginIdentifier(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item label="Password">
-              <Input.Password
-                placeholder="Password"
-                prefix={<LockOutlined />}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <Typography.Text type="secondary" style={{ display: "block", marginTop: 8, fontSize: "0.9em" }}>
+                Didn't receive it? Please check your spam or junk folder.
+              </Typography.Text>
             </Form.Item>
             <Form.Item>
               <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={handleGoBackToEmail}
+                style={{ marginBottom: 16 }}
+              >
+                Back to Email
+              </Button>
+              <Button
                 type="primary"
                 block
-                onClick={handleLogin}
+                onClick={handleOtpLogin}
                 icon={<KeyOutlined />}
                 disabled={isLoading}
+                size="large"
+                style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
               >
-                {isLoading ? <Spin /> : "Login"}
+                {isLoading ? <Spin size="small" /> : "Login"}
               </Button>
             </Form.Item>
-            <Text
-              style={{
-                textAlign: "center",
-                display: "block",
-                marginBottom: 10,
-              }}
-            >
-              <Link
-                icon={<QuestionCircleOutlined />}
-                onClick={() => setResetEmail(loginIdentifier)}
-              >
-                Forgot Password?
-              </Link>
-            </Text>
-          </Form>
-        </TabPane>
-
-        {/* 🔹 OTP Login */}
-      </Tabs>
+          </>
+        )}
+      </Form>
     </div>
   );
 };

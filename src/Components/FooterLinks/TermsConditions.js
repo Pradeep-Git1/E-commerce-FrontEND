@@ -58,7 +58,7 @@ const TermsConditions = () => {
         {/* 6. Contact Us */}
         <Panel header="6. Contact Us" key="6">
           <Paragraph>
-            If you have any questions about these Terms of Service, please contact us at <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>.
+            If you have any questions about these Terms of Service, please contact us at <a href="mailto:sales@chocosign.in">contact@chocosign.in</a>.
           </Paragraph>
         </Panel>
 

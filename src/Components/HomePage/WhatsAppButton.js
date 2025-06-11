@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { WhatsAppOutlined } from "@ant-design/icons";
 
 function WhatsAppButton({ phoneNumber }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768); // Basic mobile detection
+      setIsMobile(window.innerWidth <= 768);
     };
 
     handleResize();
@@ -25,10 +24,8 @@ function WhatsAppButton({ phoneNumber }) {
     if (isConfirmed) {
       let whatsappUrl = "";
       if (isMobile) {
-        // Assume WhatsApp might be installed on mobile
         whatsappUrl = `https://wa.me/${phoneNumber}`;
       } else {
-        // Assume WhatsApp Web is the better option for desktop
         whatsappUrl = `https://web.whatsapp.com/send?phone=${phoneNumber}`;
       }
       window.open(whatsappUrl, "_blank");
@@ -38,24 +35,43 @@ function WhatsAppButton({ phoneNumber }) {
   const buttonStyle = {
     position: "fixed",
     bottom: "70px",
-    right: "20px",
-    backgroundColor: "#25D366",
-    color: "white",
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
+    right: "15px",
+    width: "50px",
+    height: "50px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     cursor: "pointer",
     zIndex: 999,
-    fontSize: "1.5em",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0 0 20px rgba(37, 211, 102, 0.5)", // Subtle glow (WhatsApp green)
+    borderRadius: "10%", // Make it round
+    transition: "transform 0.2s ease-in-out, background-color 0.2s ease-in-out", // Smooth transition
+  };
+
+  const imageStyle = {
+    width: "100%",
+    height: "100%",
+    borderRadius: "10%", 
   };
 
   return (
-    <div style={buttonStyle} onClick={handleWhatsAppClick}>
-      <WhatsAppOutlined />
+    <div
+      style={buttonStyle}
+      onClick={handleWhatsAppClick}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = "scale(1.1)"; // Slightly larger on hover
+        e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.6)"; // Slightly more transparent on hover
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+      }}
+    >
+      <img
+        src={`${process.env.PUBLIC_URL}/images/CS.png`}
+        alt="WhatsApp Support"
+        style={imageStyle}
+      />
     </div>
   );
 }

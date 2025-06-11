@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCompanyInfo } from '../../../src/app/features/company/companySlice';
@@ -7,9 +7,10 @@ import MainContent from "./MainContent";
 import Footer from "./Footer";
 import { UpOutlined } from "@ant-design/icons";
 import ChocolateLoader from "./ChocolateLoader";
-import WhatsAppButton from "./WhatsAppButton"; // Import the separate WhatsAppButton component
+import WhatsAppButton from "./WhatsAppButton"; 
+import { motion } from 'framer-motion';
 
-const CategoryPage = lazy(() => import("../Categories/CategoryPage"));
+import CategoryPage from "../Categories/CategoryPage";
 
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
@@ -62,9 +63,15 @@ function ScrollToTopButton() {
   };
 
   return (
-    <div style={buttonStyle} onClick={scrollToTop}>
+    <motion.div
+      style={buttonStyle}
+      onClick={scrollToTop}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: isVisible ? 1 : 0, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <UpOutlined style={iconStyle} />
-    </div>
+    </motion.div>
   );
 }
 
@@ -83,20 +90,29 @@ function HomePage() {
     }
   }, [companyInfo]);
 
+  const containerStyle = {
+    width: "100%", 
+    minHeight: "100vh", 
+    display: "flex",
+    flexDirection: "column",
+    overflowX: 'hidden', 
+  };
   return (
     <Router>
-      <div>
+      <div style={containerStyle}>
         <TopNav />
+        <div style={{ marginTop : 65}}>
         <Suspense fallback={<ChocolateLoader />}>
           <Routes>
             <Route path="/" element={<MainContent />} />
             <Route path="/category/:categoryId" element={<CategoryPage />} />
+            <Route path="*" element={<MainContent />} />
           </Routes>
         </Suspense>
         <Footer />
         <ScrollToTopButton />
         {whatsappNumber && <WhatsAppButton phoneNumber={whatsappNumber} />}
-      </div>
+      </div></div>
     </Router>
   );
 }

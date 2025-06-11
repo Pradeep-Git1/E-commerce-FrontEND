@@ -5,36 +5,49 @@ import {
   EditOutlined,
   CheckOutlined,
   CloseOutlined,
-  UserOutlined,
   HomeOutlined,
   PhoneOutlined,
   MessageOutlined,
   MailOutlined,
 } from "@ant-design/icons";
-import { List, Divider, Typography, Button, Input, message, Avatar, Space } from "antd";
+import { List, Divider, Typography, Button, Input, message, Space } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../app/features/user/userSlice";
 import UserOrders from "./UserOrders";
 import UserAddress from "./UserAddress";
 import { patchRequest } from "../../Services/api";
-import { fetchCompanyInfo } from "../../../src/app/features/company/companySlice"; // Import the fetch action
+import { fetchCompanyInfo } from "../../../src/app/features/company/companySlice";
 import WhatsAppButton from "./WhatsAppButton";
 
 const { Text, Title } = Typography;
 
 const UserMenu = ({ onLogout }) => {
   const user = useSelector((state) => state.user.data);
-  const companyInfo = useSelector((state) => state.company.data); // Get company info from store
+  const companyInfo = useSelector((state) => state.company.data);
   const dispatch = useDispatch();
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
-  const [editedName, setEditedName] = useState(user?.full_name || "");
-  const [editedPhone, setEditedPhone] = useState(user?.phone_number || "");
+
+  // Helper function to check if a value should be considered "not provided"
+  // This helps in initializing the state as well as rendering
+  const isNotProvidedValue = (value) => {
+    return value === null || value === undefined || (typeof value === 'string' && (value.trim() === '' || value.trim().toLowerCase() === 'none'));
+  };
+
+  // Initialize editedName: If user?.full_name is not "None" (or null/undefined/empty), use it; otherwise, use an empty string.
+  const [editedName, setEditedName] = useState(
+    isNotProvidedValue(user?.full_name) ? "" : user.full_name
+  );
+
+  // Initialize editedPhone: Same logic as editedName
+  const [editedPhone, setEditedPhone] = useState(
+    isNotProvidedValue(user?.phone_number) ? "" : user.phone_number
+  );
 
   useEffect(() => {
-    dispatch(fetchCompanyInfo()); // Ensure company info is fetched when component mounts
+    dispatch(fetchCompanyInfo());
   }, [dispatch]);
 
   const handleLogout = () => {
@@ -50,7 +63,6 @@ const UserMenu = ({ onLogout }) => {
       await patchRequest("/user-profile/", { full_name: editedName });
       message.success("Name updated successfully!");
       setIsEditingName(false);
-      // Optionally, you could dispatch an action to update the user data in the store
     } catch {
       message.error("Failed to update name. Please try again.");
     }
@@ -61,11 +73,11 @@ const UserMenu = ({ onLogout }) => {
       await patchRequest("/user-profile/", { phone_number: editedPhone });
       message.success("Phone number updated successfully!");
       setIsEditingPhone(false);
-      // Optionally, you could dispatch an action to update the user data in the store
     } catch {
       message.error("Failed to update phone number. Please try again.");
     }
   };
+
 
   const renderEditableField = (label, value, isEditing, setEditing, onChange, onSave) => (
     <List.Item>
@@ -77,14 +89,19 @@ const UserMenu = ({ onLogout }) => {
               size="small"
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              style={{ width: "150px" }} // Adjust width as needed
+              style={{ width: "150px" }}
             />
             <CheckOutlined onClick={onSave} style={{ color: "green", cursor: "pointer" }} />
             <CloseOutlined onClick={() => setEditing(false)} style={{ color: "red", cursor: "pointer" }} />
           </Space>
         ) : (
           <Space>
-            <Text>{value || <Text type="secondary">Not provided</Text>}</Text>
+            {/* Display "Not provided" if the value is considered missing */}
+            {isNotProvidedValue(value) ? ( // Using the same helper for consistent display
+              <Text type="secondary">Not provided</Text>
+            ) : (
+              <Text>{value}</Text>
+            )}
             <EditOutlined onClick={() => setEditing(true)} style={{ color: "#1890ff", cursor: "pointer" }} />
           </Space>
         )}
@@ -163,17 +180,20 @@ const UserMenu = ({ onLogout }) => {
       }
     }
 
+    // Determine the display name for the header using the same helper
+    const displayName = isNotProvidedValue(user?.full_name) ? "Guest User" : user.full_name;
+
     return (
       <div style={menuContainer}>
         <div style={headerContainer}>
-          <Avatar size={64} icon={<UserOutlined />} src={user?.profile_picture} />
           <Title level={3} style={userName}>
-            {user?.full_name || "Guest User"}
+            {displayName} {/* Use the calculated display name */}
           </Title>
           {user?.email && <Text type="secondary">{user.email}</Text>}
         </div>
         <Divider style={dividerStyle} />
         <List>
+          {/* Pass the edited values to renderEditableField */}
           {renderEditableField("Name", editedName, isEditingName, setIsEditingName, setEditedName, saveName)}
           {renderEditableField("Phone", editedPhone, isEditingPhone, setIsEditingPhone, setEditedPhone, savePhone)}
         </List>
@@ -187,7 +207,7 @@ const UserMenu = ({ onLogout }) => {
           </List.Item>
           <List.Item onClick={() => handleItemClick("Addresses")} style={listItem}>
             <Space>
-              <HomeOutlined /> {/* Consider a different icon like EnvironmentOutlined */}
+              <HomeOutlined />
               <Text strong>Addresses</Text>
             </Space>
           </List.Item>
@@ -213,13 +233,13 @@ const UserMenu = ({ onLogout }) => {
 
   // --- Styles ---
   const menuContainer = {
-    padding: 5,
+    padding: 20,
   };
 
   const headerContainer = {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 24,
   };
 
@@ -240,11 +260,11 @@ const UserMenu = ({ onLogout }) => {
   const logoutItem = {
     cursor: "pointer",
     padding: "12px 0",
-    color: "#ff4d4f", // Red color for logout
+    color: "#ff4d4f",
   };
 
   const contentContainer = {
-    padding: 2,
+    padding: 20,
   };
 
   const backButton = {

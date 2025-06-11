@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Avatar,
   Button,
@@ -23,6 +23,7 @@ import UserMenu from "./UserMenu";
 import CartMenu from "./CartMenu";
 import UserLogin from "./UserLogin";
 import { getRequest } from "../../Services/api";
+import MegaMenuCategoryColumn from "./MegaMenu"; // Import the new MegaMenu component
 
 const { Title } = Typography;
 const primaryColor = "#593E2F";
@@ -43,96 +44,25 @@ const TopNav = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showMenuIcon, setShowMenuIcon] = useState(false);
-  const navRef = useRef(null);
   const location = useLocation();
   const dispatch = useDispatch();
   const [badgeJiggle, setBadgeJiggle] = useState(false);
   const previousCartItems = useRef(cartItems);
-  const [openSubMenuId, setOpenSubMenuId] = useState(null);
+  const [hoveredCategoryId, setHoveredCategoryId] = useState(null); // State to manage hovered top-level category
 
+  // --- Category Data Fetching ---
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        // Simulate API response with the provided data
-        setCategories([
-          {
-            id: 44,
-            name: "Home Made Chocolates",
-            slug: "home-made-chocolates",
-            subcategories: [
-              { id: 45, name: "Dark", slug: "dark", subcategories: [] },
-              { id: 46, name: "White", slug: "white", subcategories: [] },
-              { id: 47, name: "Milk", slug: "milk", subcategories: [] },
-              {
-                id: 48,
-                name: "Cream Centres",
-                slug: "cream-centres",
-                subcategories: [],
-              },
-              {
-                id: 49,
-                name: "Personalised Gifts",
-                slug: "personalised-gifts",
-                subcategories: [],
-              },
-              {
-                id: 51,
-                name: "Birthday gifts",
-                slug: "birthday-gifts",
-                subcategories: [],
-              },
-            ],
-          },
-          { id: 15, name: "Oils", slug: "oils", subcategories: [] },
-          { id: 50, name: "Perfumes", slug: "perfumes", subcategories: [] },
-          { id: 16, name: "Spices", slug: "spices", subcategories: [] },
-          {
-            id: 14,
-            name: "Tea",
-            slug: "tea",
-            subcategories: [
-              {
-                id: 30,
-                name: "Light Tea",
-                slug: "light-tea",
-                subcategories: [],
-              },
-              {
-                id: 31,
-                name: "Strong Tea",
-                slug: "strong-tea",
-                subcategories: [
-                  {
-                    id: 52,
-                    name: "Sub Tea",
-                    slug: "sub-tea",
-                    subcategories: [],
-                  },
-                ],
-              },
-              {
-                id: 32,
-                name: "Medicinal Tea",
-                slug: "medicinal-tea",
-                subcategories: [],
-              },
-              {
-                id: 33,
-                name: "Spice Tea",
-                slug: "spice-tea",
-                subcategories: [],
-              },
-              {
-                id: 34,
-                name: "Orthodox Tea",
-                slug: "orthodox-tea",
-                subcategories: [],
-              },
-            ],
-          },
-        ]);
+        const response = await getRequest("top-categories/");
+        if (response) {
+          setCategories(response);
+        }
       } catch (err) {
-        setError("Failed to load categories.");
+        console.error("Error fetching categories:", err);
+        setError("Failed to load categories. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -140,6 +70,7 @@ const TopNav = () => {
 
     fetchCategories();
 
+    // --- Responsive Menu Icon Visibility ---
     const checkMenuVisibility = () => {
       setShowMenuIcon(window.innerWidth < 992);
     };
@@ -152,29 +83,21 @@ const TopNav = () => {
     };
   }, []);
 
+  // --- Cart Fetching & Badge Jiggle ---
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch, user]);
 
   useEffect(() => {
-    if (previousCartItems.current !== cartItems) {
+    if (previousCartItems.current && previousCartItems.current.length < safeCartItems.length) {
       setBadgeJiggle(true);
       setTimeout(() => setBadgeJiggle(false), 500);
-      previousCartItems.current = cartItems;
     }
+    previousCartItems.current = safeCartItems;
   }, [cartItems]);
 
-  const getCategoryNameFromPath = (path) => {
-    const parts = path.split("/");
-    if (parts[1] === "category" && categories.length > 0) {
-      const categoryId = parseInt(parts[2]);
-      const foundCategory = findCategoryById(categories, categoryId);
-      return foundCategory ? foundCategory.name : null;
-    }
-    return null;
-  };
-
-  const findCategoryById = (items, id) => {
+  // --- Helper Functions for Category Path ---
+  const findCategoryById = useCallback((items, id) => {
     for (const item of items) {
       if (item.id === id) {
         return item;
@@ -187,10 +110,11 @@ const TopNav = () => {
       }
     }
     return null;
-  };
+  }, []);
 
-  const selectedCategoryName = getCategoryNameFromPath(location.pathname);
+  const selectedCategory = findCategoryById(categories, parseInt(location.pathname.split("/")[2]));
 
+  // --- Drawer Handlers ---
   const handleProfileClick = () => {
     setDrawerContent(user ? "profile" : "login");
     setDrawerVisible(true);
@@ -215,109 +139,33 @@ const TopNav = () => {
     transform: badgeJiggle ? "scale(1.1)" : "scale(1)",
   };
 
-  // Recursive function to render subcategories for desktop
-  const renderSubcategoriesDesktop = (subcategories) => {
-    return (
-      <div
-        style={{
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          background: "#fff",
-          border: "1px solid #eee",
-          borderRadius: "4px",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-          padding: "8px 0",
-          zIndex: 10,
-          minWidth: "200px",
-        }}
-      >
-        {subcategories.map((sub) => (
-          <div key={sub.id} style={{ position: "relative" }}>
-            <Link
-              to={`/category/${sub.id}`}
-              style={{
-                display: "block",
-                padding: "6px 20px",
-                color: primaryColor,
-                textDecoration: "none",
-                fontSize: "14px",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f9f9f9";
-                const nestedMenu = e.currentTarget.querySelector(
-                  `.nested-subcategories-${sub.id}`
-                );
-                if (nestedMenu) {
-                  nestedMenu.style.display = "block";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                const nestedMenu = e.currentTarget.querySelector(
-                  `.nested-subcategories-${sub.id}`
-                );
-                if (nestedMenu) {
-                  nestedMenu.style.display = "none";
-                }
-              }}
-            >
-              {sub.name}
-            </Link>
-            {sub.subcategories && sub.subcategories.length > 0 && (
-              <div
-                className={`nested-subcategories-${sub.id}`}
-                style={{
-                  position: "absolute",
-                  left: "100%",
-                  top: 0,
-                  background: "#fff",
-                  border: "1px solid #eee",
-                  borderRadius: "4px",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-                  padding: "8px 0",
-                  zIndex: 11,
-                  minWidth: "200px",
-                  display: "none",
-                }}
-              >
-                {renderSubcategoriesDesktop(sub.subcategories)}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Recursive function to render menu items for mobile
-  const renderSubMenuItemsMobile = (subcategories, level = 0) => {
-    const paddingLeft = 16 + level * 16;
-    return subcategories.map((sub) => (
-      <React.Fragment key={sub.id}>
-        {sub.subcategories && sub.subcategories.length > 0 ? (
+  // --- Mobile Drawer Menu Renderer ---
+  const renderMobileMenuItems = (items) => {
+    return items.map((item) => (
+      <React.Fragment key={item.id}>
+        {item.subcategories && item.subcategories.length > 0 ? (
           <SubMenu
-            key={sub.id}
+            key={item.id}
             title={
-              <span style={{ color: primaryColor, paddingLeft }}>
-                {sub.name}
-              </span>
+              <Link
+                to={`/category/${item.id}`}
+                style={{ color: primaryColor, fontWeight: 600, textDecoration: "none" }}
+                onClick={() => setDrawerVisible(false)}
+              >
+                {item.name}
+              </Link>
             }
           >
-            {renderSubMenuItemsMobile(sub.subcategories, level + 1)}
+            {renderMobileMenuItems(item.subcategories)}
           </SubMenu>
         ) : (
-          <Menu.Item key={sub.id}>
+          <Menu.Item key={item.id}>
             <Link
-              to={`/category/${sub.id}`}
-              style={{
-                color: primaryColor,
-                textDecoration: "none",
-                paddingLeft,
-              }}
+              to={`/category/${item.id}`}
+              style={{ color: primaryColor, fontWeight: 600, textDecoration: "none" }}
+              onClick={() => setDrawerVisible(false)}
             >
-              {sub.name}
+              {item.name}
             </Link>
           </Menu.Item>
         )}
@@ -325,12 +173,147 @@ const TopNav = () => {
     ));
   };
 
+  // Callback to close mega menu when a link inside it is clicked
+  const handleMegaMenuLinkClick = useCallback(() => {
+    setHoveredCategoryId(null);
+  }, []);
+
   return (
     <>
+      {/* Global Styles for Desktop Hover Menus - IMPORTANT! */}
+      <style>
+        {`
+          /* Top-Level Category Item */
+          .top-level-category {
+            position: relative;
+            /* Ensures the dropdown positions relative to this parent */
+          }
+
+          /* Mega Menu Container */
+          .mega-menu-container {
+            position: absolute;
+            top: 100%; /* Position right below the nav item */
+            left: 50%;
+            transform: translateX(-50%); /* Center horizontally */
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            min-width: 280px; /* Adjust as needed for multi-column */
+            max-width: 800px; /* Prevent it from getting too wide */
+            z-index: 100; /* Ensure it's above other content */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) translateX(-50%); /* Start slightly below for slide effect */
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out, transform 0.3s ease-out;
+            display: flex; /* Allow for multiple columns if needed */
+            flex-wrap: wrap; /* Wrap columns if content is wide */
+          }
+
+          /* Show Mega Menu on hover */
+          .top-level-category:hover > .mega-menu-container {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) translateX(-50%); /* Slide up to final position */
+          }
+
+          /* Individual Mega Menu List/Column */
+          .mega-menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%; /* Default to single column */
+            /* For multi-column: flex: 1 1 auto; min-width: 180px; margin-right: 20px; */
+          }
+
+          /* Mega Menu Item */
+          .mega-menu-item {
+            position: relative; /* For nested submenus */
+            margin-bottom: 4px; /* Spacing between items */
+          }
+
+          .mega-menu-item:last-child {
+            margin-bottom: 0;
+          }
+
+          /* Mega Menu Link */
+          .mega-menu-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            color: ${primaryColor};
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+            border-radius: 4px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+          }
+
+          .mega-menu-link:hover {
+            background-color: #f5f5f5; /* Light hover background */
+            color: ${primaryColor}; /* Keep color on hover */
+          }
+
+          .mega-menu-link.active-link {
+            background-color: ${secondaryColor} !important;
+            font-weight: 600;
+          }
+
+          .mega-menu-arrow {
+            font-size: 10px;
+            margin-left: 10px;
+            transition: transform 0.2s ease;
+          }
+
+          /* Nested Mega Menu - Appears to the right */
+          .mega-menu-item:hover > .nested-mega-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0); /* Slide left to final position */
+          }
+
+          .nested-mega-menu {
+            position: absolute;
+            left: 100%; /* Appears to the right of the parent */
+            top: 0;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 12px 16px;
+            min-width: 200px;
+            z-index: 101; /* Higher than parent mega menu */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(10px); /* Start slightly to the right */
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out, transform 0.3s ease-out;
+          }
+
+          /* Ant Design Menu overrides for mobile drawer for better link styling */
+          .ant-drawer-body .ant-menu-item-selected {
+            background-color: ${secondaryColor} !important;
+            color: ${primaryColor} !important; /* Ensure text color is primary */
+          }
+          .ant-drawer-body .ant-menu-item-selected .ant-menu-title-content a {
+            color: ${primaryColor} !important;
+            font-weight: 600;
+          }
+          /* For SubMenu titles when they are active/selected */
+          .ant-drawer-body .ant-menu-submenu-selected > .ant-menu-submenu-title {
+            background-color: ${secondaryColor} !important;
+            color: ${primaryColor} !important;
+          }
+          .ant-drawer-body .ant-menu-submenu-title a {
+            color: ${primaryColor} !important; /* Ensure submenu title links have primary color */
+          }
+        `}
+      </style>
+
       <div
-        ref={navRef}
         style={{
-          position: "sticky",
+          position: "fixed",
           top: 0,
           zIndex: 1000,
           width: "100%",
@@ -354,27 +337,24 @@ const TopNav = () => {
           }}
         >
           <img
-            src={
-              company?.company_logo ||
-              `${process.env.PUBLIC_URL}/companylogo.png`
-            }
+            src={company?.company_logo || ""}
             alt={company?.company_name || "Company Logo"}
-            style={{ height: 40, marginRight: 12 }}
+            style={{ height: 30, marginRight: 8 }}
           />{" "}
           <Title
-            level={4}
+            level={5}
             style={{
               margin: 0,
               color: primaryColor,
-              fontSize: "20px",
+              fontSize: "16px",
               whiteSpace: "nowrap",
             }}
           >
-            {company?.company_name || "Chocolate Factory"}
+            {company?.company_name || ""}
           </Title>
         </Link>
 
-        {/* Category Links with Sub-expansion (for desktop) */}
+        {/* Category Links with Mega Menu (for desktop) */}
         {!showMenuIcon && !loading && !error && categories.length > 0 && (
           <div
             style={{
@@ -385,9 +365,9 @@ const TopNav = () => {
             {categories.map((category) => (
               <div
                 key={category.id}
-                style={{ position: "relative" }}
-                onMouseEnter={() => setOpenSubMenuId(category.id)}
-                onMouseLeave={() => setOpenSubMenuId(null)}
+                className="top-level-category"
+                onMouseEnter={() => setHoveredCategoryId(category.id)}
+                onMouseLeave={() => setHoveredCategoryId(null)}
               >
                 <Link
                   to={`/category/${category.id}`}
@@ -397,24 +377,36 @@ const TopNav = () => {
                     borderRadius: "24px",
                     color: primaryColor,
                     fontWeight:
-                      selectedCategoryName === category.name ? "600" : "400",
+                      selectedCategory && selectedCategory.id === category.id
+                        ? "600"
+                        : "400",
                     textDecoration: "none",
                     backgroundColor:
-                      selectedCategoryName === category.name
+                      selectedCategory && selectedCategory.id === category.id
                         ? secondaryColor
                         : "transparent",
                     transition:
                       "background-color 0.3s ease, transform 0.2s ease",
                     fontSize: "15px",
                     display: "inline-block",
+                    cursor: "pointer",
                   }}
+                  onClick={handleMegaMenuLinkClick} // Close mega menu if top-level link is clicked
                 >
                   {category.name}
                 </Link>
+                {/* Render the Mega Menu for the hovered top-level category */}
                 {category.subcategories &&
                   category.subcategories.length > 0 &&
-                  openSubMenuId === category.id &&
-                  renderSubcategoriesDesktop(category.subcategories)}
+                  hoveredCategoryId === category.id && (
+                    <div className="mega-menu-container">
+                      <MegaMenuCategoryColumn
+                        categories={category.subcategories}
+                        selectedCategory={selectedCategory}
+                        onLinkClick={handleMegaMenuLinkClick}
+                      />
+                    </div>
+                  )}
               </div>
             ))}
           </div>
@@ -424,24 +416,24 @@ const TopNav = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         {/* Right side: Cart, Profile, Menu */}
-        <Space size="large">
+        <Space size="middle">
           <Badge
             count={safeCartItems.length}
             showZero
             style={badgeStyle}
-            offset={[10, -10]}
+            offset={[8, -8]}
             onClick={() => {
               setDrawerContent("cart");
               setDrawerVisible(true);
             }}
           >
             <ShoppingCartOutlined
-              style={{ fontSize: 24, cursor: "pointer", color: primaryColor }}
+              style={{ fontSize: 20, cursor: "pointer", color: primaryColor }}
             />
           </Badge>
 
           <Avatar
-            size="medium"
+            size="small"
             icon={<UserOutlined />}
             style={{ cursor: "pointer", backgroundColor: primaryColor }}
             onClick={handleProfileClick}
@@ -452,7 +444,7 @@ const TopNav = () => {
             <Button
               type="text"
               icon={
-                <MenuOutlined style={{ fontSize: 24, color: primaryColor }} />
+                <MenuOutlined style={{ fontSize: 20, color: primaryColor }} />
               }
               onClick={() => {
                 setDrawerContent("menu");
@@ -477,12 +469,13 @@ const TopNav = () => {
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        width={320}
+        width={300}
         headerStyle={{
           backgroundColor: secondaryColor,
           borderBottom: "1px solid #EAEAEA",
-          fontSize: "18px",
+          fontSize: "16px",
           fontWeight: 500,
+          color: primaryColor,
         }}
         bodyStyle={{ padding: 3 }}
       >
@@ -499,38 +492,12 @@ const TopNav = () => {
           />
         )}
         {drawerContent === "menu" && (
-          <Menu mode="inline" selectable={false}>
-            {/* Recursive function to render menu items for mobile */}
-            {categories.map((category) => (
-              <React.Fragment key={category.id}>
-                {category.subcategories && category.subcategories.length > 0 ? (
-                  <SubMenu
-                    key={category.id}
-                    title={
-                      <span style={{ color: primaryColor, fontWeight: 600 }}>
-                        {category.name}
-                      </span>
-                    }
-                  >
-                    {/* Recursively render subcategories */}
-                    {renderSubMenuItemsMobile(category.subcategories)}
-                  </SubMenu>
-                ) : (
-                  <Menu.Item key={category.id}>
-                    <Link
-                      to={`/category/${category.id}`}
-                      style={{
-                        color: primaryColor,
-                        fontWeight: 600,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {category.name}
-                    </Link>
-                  </Menu.Item>
-                )}
-              </React.Fragment>
-            ))}
+          <Menu
+            mode="inline"
+            selectable={false}
+            selectedKeys={selectedCategory ? [selectedCategory.id.toString()] : []}
+          >
+            {renderMobileMenuItems(categories)}
           </Menu>
         )}
       </Drawer>

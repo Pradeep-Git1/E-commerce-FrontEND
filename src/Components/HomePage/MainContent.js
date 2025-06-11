@@ -3,6 +3,7 @@ import HeroCarousel from '../MainContent/HeroCarousel'
 import TopProducts from '../MainContent/TopProducts'
 import Gallery from './Gallery'
 import CompanyReels from './Reels'
+import ClientReviewImageGallery from '../MainContent/ClientReviewImageGallery'
 
 function MainContent() {
   return (
@@ -10,7 +11,8 @@ function MainContent() {
         <HeroCarousel/>
         <TopProducts/>
         <Gallery/>
-        {/* <CompanyReels/> */}
+        <CompanyReels/>
+        <ClientReviewImageGallery/>
     </div>
   )
 }

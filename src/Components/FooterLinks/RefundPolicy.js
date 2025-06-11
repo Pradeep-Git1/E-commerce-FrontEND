@@ -18,16 +18,16 @@ const RefundPolicy = () => {
         {/* Cancellation */}
         <Panel header="1. Order Cancellation Policy" key="1">
           <Paragraph>
-            <strong>General Policy:</strong> Once you place an order, we cannot cancel it. However, you can cancel your order within two hours of placing it. Depending on your cancellation history, Chocosing may deny a refund, even if canceled within the two-hour window.
+            <strong>General Policy:</strong> Once you place an order, we cannot cancel it. However, you can cancel your order within two hours of placing it. Depending on your cancellation history, ChocoSign may deny a refund, even if canceled within the two-hour window.
           </Paragraph>
           <Paragraph>
-            <strong>Cancellation Process:</strong> You can cancel your order by calling Customer Care or emailing <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>. If you cancel within two hours of placing the order, we will process the cancellation; otherwise, we will consider the order as successful.
+            <strong>Cancellation Process:</strong> You can cancel your order by calling Customer Care or emailing <a href="mailto:sales@chocosign.in">sales@chocosign.in</a>. If you cancel within two hours of placing the order, we will process the cancellation; otherwise, we will consider the order as successful.
           </Paragraph>
           <Paragraph>
-            <strong>Chocosing’s Right to Review:</strong> We reserve the right to assess cancellation requests. If your request meets our conditions, we will process the cancellation and issue a refund.
+            <strong>ChocoSign’s Right to Review:</strong> We reserve the right to assess cancellation requests. If your request meets our conditions, we will process the cancellation and issue a refund.
           </Paragraph>
           <Paragraph>
-            <strong>Conditions for Chocosing to Cancel Orders:</strong>
+            <strong>Conditions for ChocoSign to Cancel Orders:</strong>
             <ul>
               <li>We are unable to contact you at the time of delivery.</li>
               <li>We fail to deliver due to insufficient information or authorization from you.</li>
@@ -39,7 +39,7 @@ const RefundPolicy = () => {
         {/* Refund */}
         <Panel header="2. Refund Policy" key="2">
           <Paragraph>
-            <strong>Damaged or Tampered Items:</strong> If we deliver a damaged or tampered item, you can request a refund. Please contact Customer Care or email a photo of the damaged items to <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>.
+            <strong>Damaged or Tampered Items:</strong> If we deliver a damaged or tampered item, you can request a refund. Please contact Customer Care or email a photo of the damaged items to <a href="mailto:sales@chocosign.in">sales@chocosign.in</a>.
           </Paragraph>
           <Paragraph>
             <strong>Refund Assessment:</strong> We will review the issue and assess your eligibility based on the conditions mentioned. If we approve your request, you will receive up to 100% of the order value. Our refund decisions are final.
@@ -86,7 +86,7 @@ const RefundPolicy = () => {
           <Paragraph>
             For any refund or exchange queries, please contact us at:
             <br />
-            📧 <a href="mailto:contact@chocosing.com">contact@chocosing.com</a>
+            📧 <a href="mailto:sales@chocosign.in">sales@chocosign.in</a>
             <br />
             📞 +1-234-567-8901
           </Paragraph>

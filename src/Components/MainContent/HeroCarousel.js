@@ -1,48 +1,11 @@
-import React from 'react';
-import { Carousel, Button } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Carousel } from 'antd';
 import { motion } from 'framer-motion';
-
-const slides = [
-  {
-    title: "Delicious Homemade Chocolates",
-    description: "Crafted with love, no preservatives – just pure indulgence.",
-    image: `${process.env.PUBLIC_URL}/images/chocolates.jpg`,
-    gradient: "linear-gradient(to right, #3a1c71cc, #d76d77cc, #ffaf7bcc)", // Purple-pink
-  },
-  {
-    title: "Soothing Herbal Teas",
-    description: "Freshly blended, naturally calming – a cup of health and joy.",
-    image: `${process.env.PUBLIC_URL}/images/tea.jpg`,
-    gradient: "linear-gradient(to right, #0f2027cc, #203a43cc, #2c5364cc)", // Herbal deep greens
-  },
-  {
-    title: "Aromatic Essential Oils",
-    description: "Cold-pressed, pure extracts to elevate your wellness rituals.",
-    image: `${process.env.PUBLIC_URL}/images/oils.jpg`,
-    gradient: "linear-gradient(to right, #355c7dcc, #6c5b7bcc, #c06c84cc)", // Lavender-green blend
-  },
-  {
-    title: "Exotic Indian Spices",
-    description: "Handpicked spices for an authentic culinary journey.",
-    image: `${process.env.PUBLIC_URL}/images/spices.jpg`,
-    gradient: "linear-gradient(to right, #8e0e00cc, #1f1c18cc)", // Spicy red-black
-  },
-  {
-    title: "Perfect Gifting Combos",
-    description: "Elegant, edible gifts that spark joy & taste divine.",
-    image: `${process.env.PUBLIC_URL}/images/combos.jpg`,
-    gradient: "linear-gradient(to right, #8360c3cc, #2ebf91cc)", // Teal-purple
-  },
-  {
-    title: "Limited Edition Seasonal Packs",
-    description: "Celebrate flavors with our handcrafted seasonal delights.",
-    image: `${process.env.PUBLIC_URL}/images/seasonal.jpg`,
-    gradient: "linear-gradient(to right, #fc5c7dcc, #6a82fbcc)", // Warm pink-blue
-  },
-];
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { getRequest } from '../../Services/api'; // Assuming api.js is in the same directory
 
 const contentStyle = {
-  height: '50vh',
+  height: '70vh',
   color: '#fff',
   textAlign: 'left',
   backgroundSize: 'cover',
@@ -52,31 +15,129 @@ const contentStyle = {
   justifyContent: 'flex-start',
   paddingLeft: '10%',
   paddingRight: '10%',
+  position: 'relative',
 };
 
+const buttonStyle = {
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  background: 'rgba(0, 0, 0, 0.3)',
+  color: 'white',
+  border: 'none',
+  padding: '12px',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  zIndex: 1,
+};
+
+const prevButtonStyle = {
+  ...buttonStyle,
+  left: '20px',
+};
+
+const nextButtonStyle = {
+  ...buttonStyle,
+  right: '20px',
+};
+
+const imagePrefix = ''; // Define the prefix
+
 const HeroCarousel = () => {
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const carouselRef = useRef(null);
+
+  useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const data = await getRequest('carousel-slides/');
+        console.log("Data received from API:", data); // Inspect the data
+        if (Array.isArray(data)) {
+          // Map over the data and prepend the prefix to the image URL
+          const updatedSlides = data.map(slide => ({
+            ...slide,
+            image: slide.image ? `${imagePrefix}${slide.image}` : null,
+          }));
+          setSlides(updatedSlides);
+        } else {
+          console.error("Received data is not an array:", data);
+          setError("Received data is not in the expected array format.");
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching carousel slides:", err);
+        setError(err.message || 'Failed to fetch carousel slides.');
+        setLoading(false);
+      }
+    };
+
+    fetchSlides();
+  }, []);
+
+  const next = () => {
+    carouselRef.current?.next();
+  };
+
+  const prev = () => {
+    carouselRef.current?.prev();
+  };
+
+  if (loading) {
+    return <div>Loading carousel slides...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading carousel slides: {error}</div>;
+  }
+
   return (
-    <Carousel autoplay speed={1000} autoplaySpeed={6000} effect="fade">
-      {slides.map((slide, index) => (
-        <div key={index}>
-          <div
-            style={{
-              ...contentStyle,
-              backgroundImage: `${slide.gradient}, url(${slide.image})`,
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0, x: -80 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.9, ease: 'easeOut' }}
+    <div style={{ position: 'relative' }}>
+      <Carousel
+        ref={carouselRef}
+        autoplay
+        speed={1000}
+        autoplaySpeed={6000}
+        effect="fade"
+        dots={false}
+      >
+        {slides.map((slide) => (
+          <div key={slide.id}>
+            <div
+              style={{
+                ...contentStyle,
+                backgroundImage: slide.image ? `url(${slide.image})` : 'none',
+                backgroundColor: slide.image ? 'transparent' : '#ccc', // Fallback background
+              }}
             >
-              <h1 style={{ fontSize: '3.5rem', color: 'white', fontWeight: 700 }}>{slide.title}</h1>
-              <p style={{ fontSize: '1.5rem', maxWidth: 600, color: 'white', marginBottom: 30 }}>{slide.description}</p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -80 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+              >
+                {slide.title && (
+                  <h1 style={{ fontSize: '3.5rem', color: 'white', fontWeight: 700, textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)' }}>
+                    {slide.title}
+                  </h1>
+                )}
+                {slide.description && (
+                  <p style={{ fontSize: '1.5rem', maxWidth: 600, color: 'white', marginBottom: 30, textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }}>
+                    {slide.description}
+                  </p>
+                )}
+              </motion.div>
+            </div>
           </div>
-        </div>
-      ))}
-    </Carousel>
+        ))}
+      </Carousel>
+      <button onClick={prev} style={prevButtonStyle}>
+        <LeftOutlined />
+      </button>
+      <button onClick={next} style={nextButtonStyle}>
+        <RightOutlined />
+      </button>
+    </div>
   );
 };
 
