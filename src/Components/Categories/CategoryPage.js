@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { getRequest } from "../../Services/api";
+import SearchComponent from "../HomePage/SearchComponent";
 import {
     Spin,
     Alert,
@@ -13,166 +14,159 @@ import {
     Card,
     Modal,
 } from "antd";
-import styled from "styled-components"; // For more granular control over responsive styles
+import styled from "styled-components";
 
 import ProductGroupCard from "./ProductGroupCard";
-import ProductGroupModal from "./ProductGroupModal";
+const ProductGroupModal = lazy(() => import("./ProductGroupModal"));
+
 const { Title, Paragraph } = Typography;
 
-// Styled components for responsive design
+// ---
+// Styled Components
+// ---
+
 const StyledCategoryPageContainer = styled.div`
-    padding: 8px; /* Reduced padding for mobile, still provides some space */
+    padding: 10px; /* Increased padding for better spacing */
+    margin: 20px auto; /* Center the container with some margin */
+    max-width: 1200px; /* Max width for large screens to keep content readable */
+    width: 95%; /* Responsive width */
 
-    @media (min-width: 576px) { /* sm breakpoint */
-        padding: 16px;
-    }
-
-    @media (min-width: 768px) { /* md breakpoint */
-        padding: 24px;
-    }
 `;
 
 const StyledTitle = styled(Title)`
     text-align: center;
     color: #333;
-    margin-bottom: 12px; /* Reduced margin for mobile */
-    font-size: 1.8em !important; /* Base font size for mobile H2 */
+    margin-bottom: 24px !important; /* Increased margin for title */
+    font-size: 2em !important;
 
     @media (min-width: 576px) {
-        font-size: 2em !important;
-        margin-bottom: 16px;
+        font-size: 2.2em !important;
+        margin-bottom: 28px !important;
     }
 
     @media (min-width: 768px) {
-        font-size: 2.2em !important;
+        font-size: 2.5em !important;
+        margin-bottom: 32px !important;
     }
 `;
 
 const StyledSubcategorySpace = styled(Space)`
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 24px; /* Adjusted margin */
     display: flex;
     flex-wrap: wrap;
-    padding: 0 4px; /* Slightly reduced horizontal padding */
+    padding: 0 8px;
 
     .ant-btn {
-        margin: 4px; /* Space between buttons */
+        margin: 6px; /* Slightly increased button margin */
+        padding: 6px 15px; /* Adjust padding for button size */
     }
 
     @media (min-width: 768px) {
-        margin-bottom: 16px;
-        padding: 0 8px;
+        margin-bottom: 32px;
+        padding: 0 12px;
     }
 `;
 
 const StyledProductGridRow = styled(Row)`
-    margin: 0 4px; /* Reduced horizontal margin for the grid */
+    margin: 0 8px; /* Increased margin */
 
     @media (min-width: 576px) {
-        margin: 0 8px;
+        margin: 0 12px;
     }
 `;
 
 const StyledAlert = styled(Alert)`
-    margin: 0 8px 12px; /* Consistent margin */
+    margin: 0 16px 20px; /* Adjusted margin for alert */
 `;
 
 const StyledParagraph = styled(Paragraph)`
     text-align: center;
-    margin-top: 12px;
+    margin-top: 20px; /* Adjusted margin */
     color: #777;
-    font-size: 0.9em; /* Smaller font for message */
+    font-size: 1em;
 
     @media (min-width: 576px) {
-        font-size: 1em;
+        font-size: 1.1em;
     }
 `;
 
-// Helper function to map product groups to subcategories based on name/description
-const mapProductGroupToSubcategory = (productGroup, subcategories) => {
-    const productName = productGroup.name.toLowerCase();
-    const productDescription = productGroup.variants[0]?.description?.toLowerCase() || '';
+// ---
+// Helper Functions
+// ---
 
-    const subcategoryMap = new Map();
-    subcategories.forEach(sub => {
-        const normalizedName = sub.name.toLowerCase().replace(/\s*(collections|specials)\s*$/, '');
-        subcategoryMap.set(normalizedName, sub.id);
-    });
+// Helper function to extract all product groups from a nested category structure
+// Only includes product groups that have at least one variant.
+const extractAllProductGroups = (category) => {
+    let allProductGroups = [];
+    if (!category) return [];
 
-    // --- Prioritized and Specific Rules ---
-    if (productName.includes("birthday") || productDescription.includes("birthday")) {
-        return subcategoryMap.get("birthday");
-    }
-    if (productName.includes("truffle") || productDescription.includes("truffle")) {
-        return subcategoryMap.get("truffle");
-    }
-    if (productName.includes("bar") || productDescription.includes("bar")) {
-        return subcategoryMap.get("bar");
-    }
-    if (productName.includes("dark") || productDescription.includes("dark")) {
-        return subcategoryMap.get("dark");
-    }
-    if (productName.includes("milk") || productDescription.includes("milk")) {
-        return subcategoryMap.get("milk");
-    }
-    if (productName.includes("white") || productDescription.includes("white")) {
-        return subcategoryMap.get("white");
-    }
-    if (
-        productName.includes("mango") || productDescription.includes("mango") ||
-        productName.includes("strawberry") || productDescription.includes("strawberry") ||
-        productName.includes("zesty") || productDescription.includes("zesty") ||
-        productName.includes("gulkand") || productDescription.includes("gulkand") ||
-        productName.includes("almond") || productDescription.includes("almond") ||
-        productName.includes("cashew") || productDescription.includes("cashew") ||
-        productName.includes("crunch") || productDescription.includes("crunch") ||
-        productName.includes("nut") || productDescription.includes("nut") ||
-        productName.includes("snuggle") || productDescription.includes("snuggle") ||
-        productName.includes("glacé") || productDescription.includes("glacé") ||
-        productName.includes("fantasy") || productDescription.includes("fantasy") ||
-        productName.includes("dream") || productDescription.includes("dream") ||
-        productName.includes("delight") || productDescription.includes("delight") ||
-        productName.includes("aura") || productDescription.includes("aura")
-    ) {
-        return subcategoryMap.get("flavored");
+    // Add product groups from the current level only if they have variants
+    if (category.product_groups && category.product_groups.length > 0) {
+        const productGroupsWithVariants = category.product_groups.filter(
+            (productGroup) => productGroup.variants && productGroup.variants.length > 0
+        );
+        allProductGroups = [...allProductGroups, ...productGroupsWithVariants];
     }
 
-    return null;
+    // Recursively add product groups from subcategories (with the same variant filter)
+    if (category.subcategories && category.subcategories.length > 0) {
+        category.subcategories.forEach(sub => {
+            allProductGroups = [...allProductGroups, ...extractAllProductGroups(sub)];
+        });
+    }
+    return allProductGroups;
+};
+
+// Helper function to get all subcategories at any level for display buttons
+const getAllSubcategories = (category) => {
+    let subcategories = [];
+    if (!category) return [];
+
+    if (category.subcategories && category.subcategories.length > 0) {
+        category.subcategories.forEach(sub => {
+            subcategories.push(sub);
+            // Recursively add subcategories of subcategories
+            subcategories = [...subcategories, ...getAllSubcategories(sub)];
+        });
+    }
+    return subcategories;
 };
 
 
 const CategoryPage = () => {
-    const { categoryId } = useParams();
-    const [productGroups, setProductGroups] = useState([]);
-    const [categoryName, setCategoryName] = useState("");
-    const [subcategories, setSubcategories] = useState([]);
-    const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+    const { categoryId, categoryNameSlug } = useParams();
+    const [fullCategoryTree, setFullCategoryTree] = useState(null); // Stores the full nested API response
+    const [displayedProductGroups, setDisplayedProductGroups] = useState([]); // Products currently being shown
+    const [activeFilterId, setActiveFilterId] = useState(null); // ID of the currently active filter (category or subcategory)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const observer = useRef();
 
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisible, setIsModal] = useState(false);
     const [selectedModalProductGroup, setSelectedModalProductGroup] = useState(null);
     const [initialModalVariantId, setInitialModalVariantId] = useState(null);
 
+    // Fetch the initial category data (main category and its entire sub-tree)
     const fetchCategoryData = useCallback(async () => {
         try {
             setLoading(true);
-            setSelectedSubcategory(null); // Reset subcategory filter when category changes
-            setPage(1);
-            setHasMore(true);
-            setProductGroups([]);
+            setError(null);
+            setFullCategoryTree(null);
+            setDisplayedProductGroups([]);
+            setActiveFilterId(null); // Reset active filter when fetching new category
 
             const response = await getRequest(
-                `/products/category/${categoryId}/?page=${1}`
+                `/products/category/${categoryId}/`
             );
 
-            setCategoryName(response.category_name);
-            setSubcategories(response.subcategories || []);
-            setProductGroups(response.product_groups || []);
-            setHasMore(response.has_more);
+            setFullCategoryTree(response); // Store the entire nested object
+
+            // Initially, show all products from the main category and its subcategories
+            // `extractAllProductGroups` already filters out product groups without variants.
+            const allProducts = extractAllProductGroups(response);
+            setDisplayedProductGroups(allProducts);
+            setActiveFilterId(response.id); // Set main category as active filter initially
+
         } catch (err) {
             console.error("Failed to load category data:", err);
             setError("Failed to load products. Please try again.");
@@ -181,92 +175,92 @@ const CategoryPage = () => {
         }
     }, [categoryId]);
 
-    const fetchMoreProducts = useCallback(async () => {
-        if (!hasMore || loading) return;
-        try {
-            setLoading(true);
-            const response = await getRequest(
-                `/products/category/${categoryId}/?page=${page + 1}`
-            );
-            setProductGroups((prevProductGroups) => [
-                ...prevProductGroups,
-                ...(response.product_groups || []),
-            ]);
-            setHasMore(response.has_more);
-            setPage((prevPage) => prevPage + 1);
-        } catch (err) {
-            console.error("Failed to load more products:", err);
-            setError("Failed to load more products.");
-        } finally {
-            setLoading(false);
-        }
-    }, [categoryId, page, hasMore, loading]);
-
     useEffect(() => {
         fetchCategoryData();
     }, [fetchCategoryData]);
 
-    const filteredProductGroups = selectedSubcategory
-        ? productGroups.filter((group) =>
-            mapProductGroupToSubcategory(group, subcategories) === selectedSubcategory
-          )
-        : productGroups;
+    // Handle clicking on a subcategory button or "All Products"
+    const handleCategorySelect = useCallback((selectedId) => {
+        if (!fullCategoryTree) return;
 
-    const handleSubcategorySelect = (subcategoryId) => {
-        setSelectedSubcategory(subcategoryId);
-    };
+        setActiveFilterId(selectedId); // Update the active filter ID
 
-    const lastProductGroupRef = useCallback(
-        (node) => {
-            if (loading) return;
-            if (observer.current) observer.current.disconnect();
-            observer.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    fetchMoreProducts();
+        if (selectedId === fullCategoryTree.id) {
+            // If "All Products" (main category) is selected, show all product groups
+            // `extractAllProductGroups` already filters out product groups without variants.
+            setDisplayedProductGroups(extractAllProductGroups(fullCategoryTree));
+        } else {
+            // Find the selected subcategory and display only its direct product groups
+            const findAndExtractProducts = (category, targetId) => {
+                if (category.id === targetId) {
+                    // Filter product groups at this level for variants
+                    return (category.product_groups || []).filter(
+                        (productGroup) => productGroup.variants && productGroup.variants.length > 0
+                    );
                 }
-            });
-            if (node) observer.current.observe(node);
-        },
-        [loading, hasMore, fetchMoreProducts]
-    );
+                if (category.subcategories) {
+                    for (const sub of category.subcategories) {
+                        const foundProducts = findAndExtractProducts(sub, targetId);
+                        if (foundProducts.length > 0 || sub.id === targetId) {
+                            return foundProducts;
+                        }
+                    }
+                }
+                return [];
+            };
+            setDisplayedProductGroups(findAndExtractProducts(fullCategoryTree, selectedId));
+        }
+    }, [fullCategoryTree]);
+
+    // Derived state for rendering
+    const currentCategoryDisplayName = fullCategoryTree ? fullCategoryTree.name : (categoryNameSlug ? categoryNameSlug.replace(/-/g, ' ') : "Loading...");
+
+    // Get all unique subcategories for button display
+    const allAvailableSubcategories = fullCategoryTree ? getAllSubcategories(fullCategoryTree) : [];
 
     const showModal = (productGroup, variantId) => {
         setSelectedModalProductGroup(productGroup);
         setInitialModalVariantId(variantId);
-        setIsModalVisible(true);
+        setIsModal(true);
     };
 
     const handleCancel = () => {
-        setIsModalVisible(false);
+        setIsModal(false);
         setSelectedModalProductGroup(null);
         setInitialModalVariantId(null);
     };
 
+    const hasProductsToDisplay = displayedProductGroups.length > 0;
+
     return (
         <StyledCategoryPageContainer>
+            
             <StyledTitle level={2}>
-                {categoryName || "Loading..."}
+                {currentCategoryDisplayName}
             </StyledTitle>
 
-            {/* Subcategory Buttons */}
-            {subcategories.length > 0 && (
+            {/* Subcategory Buttons and "All Products" */}
+            {fullCategoryTree && (
                 <StyledSubcategorySpace
                     direction="horizontal"
-                    size={[4, 8]} // Smaller gap on mobile, slightly larger for wrap
+                    size={[4, 8]}
                 >
+                    {/* "All Products" button */}
                     <Button
-                        type={!selectedSubcategory ? "primary" : "default"}
-                        onClick={() => setSelectedSubcategory(null)}
-                        size="small" // Small size for mobile buttons
+                        type={activeFilterId === fullCategoryTree.id ? "primary" : "default"}
+                        onClick={() => handleCategorySelect(fullCategoryTree.id)}
+                        size="small"
                     >
-                        All Products
+                        All {fullCategoryTree.name} Products
                     </Button>
-                    {subcategories.map((sub) => (
+
+                    {/* Buttons for all available subcategories */}
+                    {allAvailableSubcategories.map((sub) => (
                         <Button
                             key={sub.id}
-                            type={selectedSubcategory === sub.id ? "primary" : "default"}
-                            onClick={() => handleSubcategorySelect(sub.id)}
-                            size="small" // Small size for mobile buttons
+                            type={activeFilterId === sub.id ? "primary" : "default"}
+                            onClick={() => handleCategorySelect(sub.id)}
+                            size="small"
                         >
                             {sub.name}
                         </Button>
@@ -275,29 +269,23 @@ const CategoryPage = () => {
             )}
 
             {/* Loading Skeletons */}
-            {loading && page === 1 ? (
-                <StyledProductGridRow gutter={[8, 8]} justify="center"> {/* Smaller gutter for mobile */}
+            {loading ? (
+                <StyledProductGridRow gutter={[8, 8]} justify="center">
                     {Array.from({ length: 8 }).map((_, index) => (
-                        <Col key={index} xs={12} sm={12} md={8} lg={6} xl={4}> {/* xs=12 for 2 columns on mobile */}
-                            <Card>
-                                <Skeleton active />
-                            </Card>
+                        <Col key={index} xs={12} sm={12} md={8} lg={6} xl={4}>
+                            <Card><Skeleton active /></Card>
                         </Col>
                     ))}
                 </StyledProductGridRow>
             ) : error ? (
-                <StyledAlert
-                    message={error}
-                    type="error"
-                    showIcon
-                />
+                <StyledAlert message={error} type="error" showIcon />
             ) : (
                 <>
                     {/* Product Grid */}
-                    {filteredProductGroups.length > 0 ? (
-                        <StyledProductGridRow gutter={[8, 8]} justify="center"> {/* Smaller gutter for mobile */}
-                            {filteredProductGroups.map((productGroup, index) => (
-                                <Col key={productGroup.id} xs={12} sm={12} md={8} lg={6} xl={4}>
+                    {hasProductsToDisplay ? (
+                        <StyledProductGridRow gutter={[30,30]} justify="center">
+                            {displayedProductGroups.map((productGroup) => (
+                                <Col key={productGroup.id} xs={12} sm={12} md={8} xl={6}>
                                     <div>
                                         <Suspense fallback={<Card loading />}>
                                             <ProductGroupCard
@@ -306,23 +294,20 @@ const CategoryPage = () => {
                                             />
                                         </Suspense>
                                     </div>
-                                    {index === filteredProductGroups.length - 1 && hasMore && (
-                                        <div ref={lastProductGroupRef} style={{ height: "20px" }} />
-                                    )}
                                 </Col>
                             ))}
                         </StyledProductGridRow>
                     ) : (
                         <StyledParagraph>
-                            No products available for this selection.
+                            No products with variants available for this selection.
                         </StyledParagraph>
                     )}
                 </>
             )}
 
-            {/* More Products Loading Spinner */}
-            {loading && page > 1 && (
-                <div style={{ textAlign: "center", marginTop: "12px" }}>
+            {/* More Products Loading Spinner (not needed with full tree fetch, but kept for consistency if future pagination is added) */}
+            {loading && (
+                <div style={{ textAlign: "center", marginTop: "20px" }}> {/* Adjusted margin */}
                     <Spin />
                 </div>
             )}
@@ -342,6 +327,7 @@ const CategoryPage = () => {
                     onClose={handleCancel}
                 />
             </Suspense>
+            <SearchComponent/>
         </StyledCategoryPageContainer>
     );
 };

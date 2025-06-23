@@ -6,7 +6,7 @@ import { Grid } from "antd";
 const { useBreakpoint } = Grid;
 const { Title, Paragraph, Text } = Typography;
 
-const BASE_URL = "https://chocosign.in";
+const BASE_URL = "";
 
 const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
   const [showAddToCartFloat, setShowAddToCartFloat] = useState(false);
@@ -14,14 +14,12 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
   const screens = useBreakpoint();
 
   const [cardStyle, setCardStyle] = useState({
-    borderRadius: 20, // Slightly reduced border-radius for a tighter look
+    borderRadius: 10,
     overflow: "hidden",
     position: "relative",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)", // Slightly reduced shadow
     minHeight: "100%",
     display: "flex",
     flexDirection: "column",
-    transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
     backgroundColor: "#1a1a1a",
   });
 
@@ -47,9 +45,7 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
     );
   }
 
-  const formatImageUrl = (img) =>
-    img.startsWith("http") ? img : `${BASE_URL}${img}`;
-
+  
   const jiggleStyle = {
     animation: jiggle ? "jiggle 0.3s ease-in-out" : "none",
     transformOrigin: "center",
@@ -60,7 +56,6 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
     setCardStyle((prevStyle) => ({
       ...prevStyle,
       transform: "scale(1.02)", // Slightly less scale for mobile
-      boxShadow: "0 6px 18px rgba(0, 0, 0, 0.25)", // Adjusted shadow
     }));
   };
 
@@ -69,7 +64,6 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
     setCardStyle((prevStyle) => ({
       ...prevStyle,
       transform: "scale(1)",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
     }));
   };
 
@@ -106,7 +100,6 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
     fontSize: "0.7rem", // Smaller font size for mobile
     fontWeight: "bold",
     zIndex: 2,
-    boxShadow: "1px 1px 3px rgba(0, 0, 0, 0.3)", // Smaller shadow
   };
 
   const addToCartButtonStyle = {
@@ -120,7 +113,6 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)", // Smaller shadow
     transition: "opacity 0.3s ease-in-out",
     opacity: showAddToCartFloat ? 1 : 0,
     pointerEvents: showAddToCartFloat ? "auto" : "none",
@@ -169,7 +161,7 @@ const ProductGroupCard = ({ productGroup, onVariantSelectForModal }) => {
             primaryVariant.images.map((img, index) => (
               <div key={index}>
                 <img
-                  src={formatImageUrl(img)}
+                  src={img}
                   alt={`${productGroup.name} - Image ${index + 1}`}
                   style={{
                     width: "100%",

@@ -98,7 +98,7 @@ const AnimatedImageCard = ({ item, index }) => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '200px' }}>
+    <div style={{ position: 'relative', width: '200px', padding: "10px" }}>
       <Card
         bordered={false}
         style={{

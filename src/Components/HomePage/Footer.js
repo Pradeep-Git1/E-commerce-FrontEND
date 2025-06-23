@@ -59,7 +59,7 @@ const FooterComponent = () => {
     <>
       <Footer
         style={{
-          backgroundColor: "#1a1a1a",
+          backgroundColor: "transparent",
           color: "#fff",
           padding: "60px 0 30px",
           fontFamily: "'Segoe UI', sans-serif",

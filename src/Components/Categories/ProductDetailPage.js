@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Modal, Typography, Button, Space, Divider, message as AntMessage, Tag } from "antd";
+import { Typography, Button, Space, Divider, message as AntMessage, Tag } from "antd"; // Removed Modal
 import {
   ShoppingCartOutlined,
   PlusOutlined,
   MinusOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
+} from "@ant-design/icons"; // CloseOutlined not needed as it was for the modal
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../app/features/cart/cartSlice";
 import { useMediaQuery } from 'react-responsive';
@@ -14,7 +13,8 @@ import { useSwipeable } from 'react-swipeable';
 const { Title, Paragraph, Text } = Typography;
 const BASE_URL = "";
 
-const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, onClose }) => {
+// Removed 'visible' and 'onClose' props, as it's no longer a modal
+const ProductGroupDetail = ({ productGroup, initialSelectedVariantId }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
 
   // Find the initial variant or default to the first active/first available
@@ -29,32 +29,17 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
   const user = useSelector((state) => state.user.data);
 
   // Update selectedVariant and reset quantity/image when productGroup or initialSelectedVariantId changes
+  // Removed history API manipulation and popstate listener
   useEffect(() => {
-    if (productGroup && visible) {
+    if (productGroup) {
       const variantToSelect = productGroup.variants.find(v => v.id === initialSelectedVariantId) ||
                               productGroup.variants.find(v => v.is_active) ||
                               productGroup.variants[0];
       setSelectedVariant(variantToSelect);
       setQuantity(variantToSelect?.minimum_order_quantity || 1);
       setCurrentImage(0); // Reset image index on new product/variant selection
-
-      // Handle browser history for modal
-      window.history.pushState({ modalOpen: true }, '', '#product-open');
-      window.addEventListener('popstate', handlePopState);
-    } else {
-      // Cleanup: remove listener when modal is not visible
-      window.removeEventListener('popstate', handlePopState);
-      // Remove the history entry pushed by this modal when it closes naturally
-      if (window.history.state && window.history.state.modalOpen) {
-        window.history.back();
-      }
     }
-
-    // Cleanup function for the effect
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [productGroup, initialSelectedVariantId, visible]);
+  }, [productGroup, initialSelectedVariantId]);
 
   // Effect to update quantity and image when selectedVariant changes internally
   useEffect(() => {
@@ -64,13 +49,8 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
     }
   }, [selectedVariant]);
 
-  const handlePopState = useCallback((event) => {
-    // If popstate happens and the state indicates modal was opened, or if it's open but state is gone
-    if ((event.state && event.state.modalOpen) || visible) {
-      console.log("Modal closed via browser popstate (back button or history navigation)");
-      onClose(); // Trigger the onClose from the parent
-    }
-  }, [visible, onClose]);
+  // handlePopState is no longer needed
+  // const handlePopState = useCallback((event) => { /* ... */ }, [visible, onClose]);
 
   const handleIncrement = () => {
     setQuantity((prev) => prev + 1);
@@ -86,17 +66,12 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
         addToCart({ product: selectedVariant, quantity }, { meta: { arg: { user: user } }})
       );
       AntMessage.success(`${selectedVariant.name} (${selectedVariant.sizing || ''}) added to cart!`);
-      setTimeout(() => {
-        onClose(); // Close the modal after adding to cart
-      }, 800);
+      // No onClose call here, as it's not a modal
     }
   };
 
-  const handleModalClose = () => {
-    console.log("Modal closed via Ant Design's onCancel event (e.g., clicking mask or close icon).");
-    // This will trigger the useEffect cleanup which handles history
-    onClose();
-  };
+  // handleModalClose is no longer needed
+  // const handleModalClose = () => { /* ... */ };
 
   const formatImageUrl = (img) =>
     img.startsWith("http") ? img : `${BASE_URL}${img}`;
@@ -122,8 +97,8 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
   const handlers = useSwipeable({
     onSwipedLeft: handleSwipeLeft,
     onSwipedRight: handleSwipeRight,
-    preventScrollOnSwipe: true, // Prevent vertical scroll when swiping horizontally
-    trackMouse: true, // Enable mouse tracking for desktop testing
+    preventScrollOnSwipe: true,
+    trackMouse: true,
   });
   // --- End Swipe Logic ---
 
@@ -155,82 +130,66 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
   };
 
   return (
-    <Modal
-      visible={visible}
-      onCancel={handleModalClose}
-      footer={null}
-      centered
-      width={isMobile ? "95%" : 800}
-      className="product-detail-modal"
-      closeIcon={<CloseOutlined style={{ color: '#fff', fontSize: '18px' }} />}
+    // Replaced Ant Design Modal with a div
+    <div
+      className="product-detail-page-container" // New class name for page-level styling
+      style={{
+        display: "flex",
+        flexDirection: isMobile ? "column" : "row",
+        maxWidth: 1200, // Example max width for a page component
+        margin: '20px auto', // Center the component on the page
+        backgroundColor: "#2c3e50", // Same background as modal content
+        color: "#ecf0f1", // Same text color
+        borderRadius: "12px", // Same border radius
+        overflow: "hidden",
+        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)", // Example shadow
+      }}
     >
       <style>
         {`
-          .product-detail-modal .ant-modal-content {
-            padding: 0 !important;
-            border-radius: 12px !important;
-            overflow: hidden;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-          }
-          .product-detail-modal .ant-modal-header {
-            display: none;
-          }
-          .product-detail-modal .ant-modal-close-x {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.4);
-            transition: background-color 0.3s ease;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 10;
-          }
-          .product-detail-modal .ant-modal-close-x:hover {
-            background-color: rgba(0, 0, 0, 0.6);
+          .product-detail-page-container {
+            /* Styles for the main container (formerly modal content) */
           }
           /* Custom scrollbar for description */
-          .product-detail-modal .product-description-scroll::-webkit-scrollbar {
+          .product-detail-page-container .product-description-scroll::-webkit-scrollbar {
             width: 6px;
           }
-          .product-detail-modal .product-description-scroll::-webkit-scrollbar-track {
+          .product-detail-page-container .product-description-scroll::-webkit-scrollbar-track {
             background: #34495e;
             border-radius: 10px;
           }
-          .product-detail-modal .product-description-scroll::-webkit-scrollbar-thumb {
+          .product-detail-page-container .product-description-scroll::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 10px;
           }
-          .product-detail-modal .product-description-scroll::-webkit-scrollbar-thumb:hover {
+          .product-detail-page-container .product-description-scroll::-webkit-scrollbar-thumb:hover {
             background: #555;
           }
 
           /* Added for swipeable image */
           .swipe-area {
             cursor: grab;
-            user-select: none; /* Prevent text selection during swipe */
+            user-select: none;
           }
 
-          /* NEW STYLES: Container for Quantity and Add to Cart */
+          /* Container for Quantity and Add to Cart */
           .quantity-add-to-cart-row {
             display: flex;
-            align-items: center; /* Vertically align items */
-            gap: 15px; /* Space between quantity controls and button */
-            flex-wrap: wrap; /* Allow wrapping on smaller screens if needed */
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
             margin-top: ${isMobile ? '15px' : '30px'};
-            justify-content: ${isMobile ? 'center' : 'flex-start'}; /* Center on mobile, left-align on desktop */
+            justify-content: ${isMobile ? 'center' : 'flex-start'};
           }
 
           /* Style for compact warning messages, now below the row */
           .product-quantity-info-warnings {
-            min-height: 20px; /* Ensure space even if no message */
-            margin-top: 8px; /* Space above warnings if they appear */
+            min-height: 20px;
+            margin-top: 8px;
             text-align: ${isMobile ? 'center' : 'left'};
           }
           .product-quantity-info-warnings .ant-typography-warning {
-            display: block; /* Ensures each warning message takes full width in its container */
+            display: block;
             font-size: 0.75rem;
             color: #f1c40f;
             line-height: 1.2;
@@ -242,34 +201,35 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
         `}
       </style>
 
-      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
+      {/* Main content structure remains largely the same */}
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", width: "100%" }}>
         {/* Left Section: Image Gallery */}
         <div
-          {...handlers} 
+          {...handlers}
           style={{ flex: isMobile ? "none" : 1, position: "relative", backgroundColor: '#1a1a1a' }}
-          className="swipe-area" // Add a class for styling cursor
+          className="swipe-area"
         >
           <img
             src={formatImageUrl(selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[currentImage] : "/media/default-placeholder.png")}
             alt={selectedVariant.name}
             style={{
               width: "100%",
-              height: isMobile ? 240 : 400, // Reduced height for mobile
+              height: isMobile ? 240 : 400,
               objectFit: "contain",
-              padding: isMobile ? '8px' : '20px', // Reduced padding for mobile
+              padding: isMobile ? '8px' : '20px',
             }}
           />
 
           {discountPercentage !== null && (
             <div style={{
               position: "absolute",
-              top: 10, // Adjusted for smaller padding
-              left: 10, // Adjusted for smaller padding
+              top: 10,
+              left: 10,
               backgroundColor: "#e74c3c",
               color: "#fff",
-              padding: "5px 10px", // Reduced padding
-              borderRadius: "15px", // Slightly smaller border radius
-              fontSize: "0.8rem", // Slightly smaller font size
+              padding: "5px 10px",
+              borderRadius: "15px",
+              fontSize: "0.8rem",
               fontWeight: "bold",
               zIndex: 1,
               boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
@@ -283,7 +243,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
               display: "flex",
               justifyContent: "center",
               alignItems: 'center',
-              paddingBottom: isMobile ? 8 : 15, // Reduced padding for mobile
+              paddingBottom: isMobile ? 8 : 15,
               flexWrap: 'wrap',
             }}>
               {selectedVariant.images.map((img, index) => (
@@ -292,14 +252,14 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
                   src={formatImageUrl(img)}
                   alt={`Thumbnail ${index}`}
                   style={{
-                    width: isMobile ? 50 : 70, // Reduced size for mobile thumbnails
-                    height: isMobile ? 50 : 70, // Reduced size for mobile thumbnails
+                    width: isMobile ? 50 : 70,
+                    height: isMobile ? 50 : 70,
                     objectFit: "cover",
-                    margin: isMobile ? 3 : 8, // Reduced margin for mobile
+                    margin: isMobile ? 3 : 8,
                     cursor: "pointer",
-                    borderRadius: 6, // Slightly smaller border radius
-                    border: currentImage === index ? "2px solid #3498db" : "1px solid transparent", // Thinner border for mobile
-                    boxShadow: currentImage === index ? "0 0 8px rgba(52, 152, 219, 0.7)" : "none", // Smaller shadow
+                    borderRadius: 6,
+                    border: currentImage === index ? "2px solid #3498db" : "1px solid transparent",
+                    boxShadow: currentImage === index ? "0 0 8px rgba(52, 152, 219, 0.7)" : "none",
                     transition: "all 0.3s ease",
                   }}
                   onClick={() => handleThumbnailClick(index)}
@@ -312,7 +272,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
         {/* Right Section: Product Details & Actions */}
         <div style={{
           flex: 1,
-          padding: isMobile ? "15px" : "30px", // Reduced padding for mobile
+          padding: isMobile ? "15px" : "30px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -320,25 +280,25 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
           <div>
             {/* Product Group Name (Main Title) */}
             <Title level={isMobile ? 3 : 2} style={{
-              marginBottom: 5, // Reduced margin
+              marginBottom: 5,
               color: "#f39c12",
               fontWeight: 700,
-              fontSize: isMobile ? '1.5rem' : '2.2rem', // Adjusted font size for mobile
+              fontSize: isMobile ? '1.5rem' : '2.2rem',
               lineHeight: 1.2,
             }}>
               {productGroup.name}
             </Title>
             <Paragraph
-              className="product-description-scroll" // Add class for custom scrollbar
+              className="product-description-scroll"
               style={{
-                margin: '10px 0 0', // Reduced margin
+                margin: '10px 0 0',
                 textAlign: "justify",
-                lineHeight: "1.5", // Slightly reduced line height
-                fontSize: isMobile ? '0.9rem' : '1.1rem', // Adjusted font size for mobile
+                lineHeight: "1.5",
+                fontSize: isMobile ? '0.9rem' : '1.1rem',
                 color: "#ecf0f1",
-                maxHeight: isMobile ? '70px' : '100px', // Adjusted max height for mobile
+                maxHeight: isMobile ? '70px' : '100px',
                 overflowY: 'auto',
-                paddingRight: isMobile ? '0' : '8px', // Reduced padding
+                paddingRight: isMobile ? '0' : '8px',
               }}
             >
               {selectedVariant.description || "No description available for this variant."}
@@ -347,9 +307,9 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
             {/* Variant Name & Sizing (if applicable) */}
             {(selectedVariant.name !== productGroup.name || selectedVariant.sizing) && (
               <Paragraph style={{
-                marginBottom: isMobile ? 8 : 15, // Reduced margin
+                marginBottom: isMobile ? 8 : 15,
                 color: "#bdc3c7",
-                fontSize: isMobile ? '1rem' : '1.3rem', // Adjusted font size for mobile
+                fontSize: isMobile ? '1rem' : '1.3rem',
                 fontWeight: 600,
               }}>
                 {selectedVariant.name !== productGroup.name ? selectedVariant.name : ''}
@@ -362,7 +322,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
                 <Text
                   delete
                   style={{
-                    fontSize: isMobile ? 14 : 20, // Adjusted font size for mobile
+                    fontSize: isMobile ? 14 : 20,
                     color: "rgba(255, 255, 255, 0.6)",
                   }}
                 >
@@ -371,7 +331,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
               )}
 
               <Text strong style={{
-                fontSize: isMobile ? 20 : 30, // Adjusted font size for mobile
+                fontSize: isMobile ? 20 : 30,
                 color: "#2ecc71",
                 fontWeight: 900,
               }}>
@@ -382,11 +342,11 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
             <Divider style={{ margin: isMobile ? "10px 0" : "25px 0", borderColor: 'rgba(255,255,255,0.1)' }} />
 
             {/* Variant Selection Options */}
-            <div style={{ marginBottom: isMobile ? 10 : 20 }}> {/* Reduced margin */}
+            <div style={{ marginBottom: isMobile ? 10 : 20 }}>
               {uniqueSizings.length > 0 && (
-                <div style={{ marginBottom: 8 }}> {/* Reduced margin */}
+                <div style={{ marginBottom: 8 }}>
                   <Text strong style={{ color: '#bdc3c7', display: 'block', marginBottom: 4, fontSize: isMobile ? '0.9rem' : '1rem' }}>Size:</Text>
-                  <Space size={[6, 6]} wrap> {/* Reduced space size */}
+                  <Space size={[6, 6]} wrap>
                     {uniqueSizings.map(size => (
                       <Tag
                         key={size}
@@ -400,7 +360,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
                             if (singleMatch) setSelectedVariant(singleMatch);
                           }
                         }}
-                        style={{ cursor: 'pointer', borderColor: '#3498db', color: currentSizing === size ? '#fff' : '#ecf0f1', background: currentSizing === size ? '#3498db' : 'transparent', fontSize: isMobile ? '0.8rem' : '0.9rem', padding: '4px 8px' }} // Adjusted font size and padding
+                        style={{ cursor: 'pointer', borderColor: '#3498db', color: currentSizing === size ? '#fff' : '#ecf0f1', background: currentSizing === size ? '#3498db' : 'transparent', fontSize: isMobile ? '0.8rem' : '0.9rem', padding: '4px 8px' }}
                       >
                         {size}
                       </Tag>
@@ -410,9 +370,9 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
               )}
 
               {uniqueColors.length > 0 && (
-                <div style={{ marginBottom: 8 }}> {/* Reduced margin */}
+                <div style={{ marginBottom: 8 }}>
                   <Text strong style={{ color: '#bdc3c7', display: 'block', marginBottom: 4, fontSize: isMobile ? '0.9rem' : '1rem' }}>Color:</Text>
-                  <Space size={[6, 6]} wrap> {/* Reduced space size */}
+                  <Space size={[6, 6]} wrap>
                     {uniqueColors.map(color => (
                       <Tag
                         key={color}
@@ -426,7 +386,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
                             if (singleMatch) setSelectedVariant(singleMatch);
                           }
                         }}
-                        style={{ cursor: 'pointer', borderColor: '#9b59b6', color: currentColor === color ? '#fff' : '#ecf0f1', background: currentColor === color ? '#9b59b6' : 'transparent', fontSize: isMobile ? '0.8rem' : '0.9rem', padding: '4px 8px' }} // Adjusted font size and padding
+                        style={{ cursor: 'pointer', borderColor: '#9b59b6', color: currentColor === color ? '#fff' : '#ecf0f1', background: currentColor === color ? '#9b59b6' : 'transparent', fontSize: isMobile ? '0.8rem' : '0.9rem', padding: '4px 8px' }}
                       >
                         {color}
                       </Tag>
@@ -436,9 +396,9 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
               )}
 
               {uniqueMaterials.length > 0 && (
-                <div style={{ marginBottom: 8 }}> {/* Reduced margin */}
+                <div style={{ marginBottom: 8 }}>
                   <Text strong style={{ color: '#bdc3c7', display: 'block', marginBottom: 4, fontSize: isMobile ? '0.9rem' : '1rem' }}>Material:</Text>
-                  <Space size={[6, 6]} wrap> {/* Reduced space size */}
+                  <Space size={[6, 6]} wrap>
                     {uniqueMaterials.map(material => (
                       <Tag
                         key={material}
@@ -465,9 +425,8 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
             <Divider style={{ margin: isMobile ? "10px 0" : "25px 0", borderColor: 'rgba(255,255,255,0.1)' }} />
           </div>
 
-          {/* NEW: Quantity Controls and Add to Cart Button on the same line */}
+          {/* Quantity Controls and Add to Cart Button */}
           <div className="quantity-add-to-cart-row">
-            {/* Quantity controls */}
             <Space size="middle">
               <Button
                 icon={<MinusOutlined />}
@@ -494,15 +453,14 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
               />
             </Space>
 
-            {/* Add to Cart Button */}
             <Button
               type="primary"
               icon={<ShoppingCartOutlined />}
               size={isMobile ? "middle" : "large"}
               onClick={handleAddToCart}
               style={{
-                flexGrow: 1, // Allow button to grow and fill available space
-                maxWidth: isMobile ? 'calc(100% - 100px)' : 220, // Adjust max width based on other elements
+                flexGrow: 1,
+                maxWidth: isMobile ? 'calc(100% - 100px)' : 220,
                 height: isMobile ? 40 : 50,
                 borderRadius: 6,
                 fontWeight: "bold",
@@ -521,7 +479,7 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
             </Button>
           </div>
 
-          {/* Warning messages (now placed below the main quantity/button row) */}
+          {/* Warning messages */}
           <div className="product-quantity-info-warnings">
             {selectedVariant.total_stock > 0 && quantity > selectedVariant.total_stock && (
                 <Text type="warning">
@@ -536,8 +494,8 @@ const ProductGroupModal = ({ productGroup, initialSelectedVariantId, visible, on
           </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 
-export default ProductGroupModal;
+export default ProductGroupDetail;

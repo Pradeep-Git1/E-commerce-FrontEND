@@ -11,7 +11,7 @@ import { addToCart } from "../../app/features/cart/cartSlice";
 import { useMediaQuery } from 'react-responsive';
 
 const { Title, Paragraph, Text } = Typography;
-const BASE_URL = "https://chocosign.in";
+const BASE_URL = "";
 
 const ProductModal = ({ product, visible, onClose }) => {
   const [quantity, setQuantity] = useState(product?.minimum_order_quantity || 1);

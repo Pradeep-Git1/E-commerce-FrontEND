@@ -10,7 +10,7 @@ const { Title } = Typography;
 // --- Styled Components for Responsive Design ---
 
 const ReelsContainer = styled.div`
-    background: #fff;
+    background: transparent;
     border-radius: 12px; /* Slightly smaller border-radius for mobile */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Lighter shadow for mobile */
     position: relative;
@@ -117,8 +117,10 @@ const ReelCard = styled(Card)`
     padding-bottom: 177.77%; /* For 9:16 aspect ratio (height = width * 16/9) */
     height: 0;
     position: relative;
+    border: 0 !important;
 
     .ant-card-body {
+        border: 0 !important;
         padding: 0 !important;
         height: 100%;
         position: absolute;
@@ -338,10 +340,6 @@ function CompanyReels() {
 
     return (
         <ReelsContainer>
-            <SectionTitle level={3}>
-                <span>Our Vids</span>
-            </SectionTitle>
-
             <ReelsScrollWrapper ref={scrollRef}>
                 <Row
                     gutter={[
